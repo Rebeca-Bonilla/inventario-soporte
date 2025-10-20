@@ -1,0 +1,37 @@
+.historial-wireframe {
+  padding: 20px;
+}
+
+.titulo-pagina {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.tabla-historial-container {
+  background: white;
+  border: 1px solid #ccc;
+  overflow: auto;
+}
+
+.tabla-wireframe {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.tabla-wireframe th,
+.tabla-wireframe td {
+  border: 1px solid #999;
+  padding: 4px 6px;
+  text-align: left;
+}
+
+.tabla-wireframe th {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+.tabla-wireframe td {
+  height: 25px;
+}

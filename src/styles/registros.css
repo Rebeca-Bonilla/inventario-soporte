@@ -1,0 +1,93 @@
+.registro-wireframe {
+  padding: 20px;
+}
+
+.titulo-pagina {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.tabs-categorias {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.tab.activa {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.formulario-wireframe {
+  background: white;
+  padding: 15px;
+  border: 1px solid #ccc;
+}
+
+.fila-formulario {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.campo.tiempo {
+  flex: 2;
+}
+
+.campo label {
+  font-size: 12px;
+  margin-bottom: 2px;
+  font-weight: bold;
+}
+
+.input-wireframe {
+  padding: 5px 8px;
+  border: 1px solid #999;
+  font-size: 12px;
+  height: 25px;
+}
+
+.botones-accion {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.btn {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-borrar {
+  background: #ffcccc;
+}
+
+.btn-guardar {
+  background: #ccffcc;
+}
+
+.btn-anadir {
+  background: #ccccff;
+}

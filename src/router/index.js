@@ -18,6 +18,22 @@ const routes = [
     path: '/consulta',
     component: () => import('../views/ConsultaEquipos.vue'),
   },
+  {
+    path: '/importacion',
+    component: () => import('../views/ImportacionView.vue'),
+  },
+  {
+    path: '/reportes',
+    component: () => import('../views/ReportesView.vue'),
+  },
+  {
+    path: '/historial',
+    component: () => import('../views/HistorialView.vue'),
+  },
+  {
+    path: '/archivados',
+    component: () => import('../views/ArchivadosView.vue'),
+  },
 ]
 
 const router = createRouter({

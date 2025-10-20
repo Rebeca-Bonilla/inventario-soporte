@@ -1,0 +1,25 @@
+.importacion-wireframe {
+  padding: 20px;
+}
+.titulo-pagina {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+.contenido-importacion {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 40px;
+  text-align: center;
+}
+.area-importacion {
+  border: 2px dashed #999;
+  padding: 60px 20px;
+}
+.btn-seleccionar {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  cursor: pointer;
+  font-size: 12px;
+}

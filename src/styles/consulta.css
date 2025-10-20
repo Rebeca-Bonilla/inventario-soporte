@@ -1,0 +1,74 @@
+.consulta-wireframe {
+  padding: 20px;
+}
+
+.titulo-pagina {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.barra-herramientas {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-herramienta {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.tabs-consulta {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.tab-consulta {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.tab-consulta.activa {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.tabla-consulta-container {
+  background: white;
+  border: 1px solid #ccc;
+  overflow: auto;
+}
+
+.tabla-wireframe {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.tabla-wireframe th,
+.tabla-wireframe td {
+  border: 1px solid #999;
+  padding: 4px 6px;
+  text-align: left;
+  min-width: 80px;
+}
+
+.tabla-wireframe th {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+.tabla-wireframe td {
+  height: 25px;
+}

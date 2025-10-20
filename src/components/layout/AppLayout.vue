@@ -28,7 +28,6 @@
             <router-link to="/importacion">Importación</router-link>
             <router-link to="/reportes">Reportes</router-link>
             <router-link to="/historial">Historial</router-link>
-            <router-link to="/dashboard">HOME</router-link>
             <router-link to="/archivados">Archivados</router-link>
           </nav>
         </div>
