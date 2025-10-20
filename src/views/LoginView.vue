@@ -35,9 +35,17 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'LoginView',
+  setup() {
+    const router = useRouter()
+
+    return {
+      router,
+    }
+  },
   data() {
     return {
       usuario: '',
@@ -51,12 +59,9 @@ export default defineComponent({
     },
     login() {
       if (this.usuario && this.password) {
-        // Guardar usuario en localStorage
         localStorage.setItem('usuario', this.usuario)
         localStorage.setItem('sessionStart', Date.now().toString())
-
-        // Redirigir al dashboard
-        this.$router.push('/dashboard')
+        this.router.push('/dashboard')
       } else {
         alert('Por favor completa todos los campos')
       }

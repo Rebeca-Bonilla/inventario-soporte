@@ -15,10 +15,86 @@
       </div>
 
       <div class="formulario-wireframe">
-        <!-- Campos del formulario -->
-        <div class="fila-formulario" v-for="fila in camposFormulario" :key="fila.id">
-          <div v-for="campo in fila.campos" :key="campo.nombre" :class="['campo', campo.clase]">
-            <label>{{ campo.label }}</label>
+        <div class="fila-formulario">
+          <div class="campo">
+            <label>Usuario:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+          <div class="campo">
+            <label>Centro de Trabajo:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+          <div class="campo">
+            <label>Procesador:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+        </div>
+
+        <div class="fila-formulario">
+          <div class="campo">
+            <label>Cargo:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+          <div class="campo">
+            <label>Marca:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+          <div class="campo">
+            <label>Estado:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+        </div>
+
+        <div class="fila-formulario">
+          <div class="campo tiempo">
+            <label>Tiempo: 00:00 Límite: 30:00</label>
+          </div>
+          <div class="campo">
+            <label>Modelo:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+          <div class="campo">
+            <label>Colaborador:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+        </div>
+
+        <div class="fila-formulario">
+          <div class="campo">
+            <label>N/S:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+          <div class="campo">
+            <label>Ubicación:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+        </div>
+
+        <div class="fila-formulario">
+          <div class="campo">
+            <label>Tipo:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+          <div class="campo">
+            <label>Observaciones:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+        </div>
+
+        <div class="fila-formulario">
+          <div class="campo">
+            <label>RAM:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+          <div class="campo">
+            <label>Fecha de registro:</label>
+            <input type="text" class="input-wireframe" />
+          </div>
+        </div>
+
+        <div class="fila-formulario">
+          <div class="campo">
+            <label>Almacenamiento:</label>
             <input type="text" class="input-wireframe" />
           </div>
         </div>
@@ -53,57 +129,6 @@ export default defineComponent({
         'Tablets',
         'Terminales',
         'otros',
-      ],
-      camposFormulario: [
-        {
-          id: 1,
-          campos: [
-            { nombre: 'usuario', label: 'Usuario:', clase: '' },
-            { nombre: 'centroTrabajo', label: 'Centro de Trabajo:', clase: '' },
-            { nombre: 'procesador', label: 'Procesador:', clase: '' },
-          ],
-        },
-        {
-          id: 2,
-          campos: [
-            { nombre: 'cargo', label: 'Cargo:', clase: '' },
-            { nombre: 'marca', label: 'Marca:', clase: '' },
-            { nombre: 'estado', label: 'Estado:', clase: '' },
-          ],
-        },
-        {
-          id: 3,
-          campos: [
-            { nombre: 'tiempo', label: 'Tiempo: 00:00 Límite: 30:00', clase: 'tiempo' },
-            { nombre: 'modelo', label: 'Modelo:', clase: '' },
-            { nombre: 'colaborador', label: 'Colaborador:', clase: '' },
-          ],
-        },
-        {
-          id: 4,
-          campos: [
-            { nombre: 'ns', label: 'N/S:', clase: '' },
-            { nombre: 'ubicacion', label: 'Ubicación:', clase: '' },
-          ],
-        },
-        {
-          id: 5,
-          campos: [
-            { nombre: 'tipo', label: 'Tipo:', clase: '' },
-            { nombre: 'observaciones', label: 'Observaciones:', clase: '' },
-          ],
-        },
-        {
-          id: 6,
-          campos: [
-            { nombre: 'ram', label: 'RAM:', clase: '' },
-            { nombre: 'fechaRegistro', label: 'Fecha de registro:', clase: '' },
-          ],
-        },
-        {
-          id: 7,
-          campos: [{ nombre: 'almacenamiento', label: 'Almacenamiento:', clase: '' }],
-        },
       ],
     }
   },

@@ -1,7 +1,6 @@
 <template>
   <AppLayout>
     <div class="dashboard-wireframe">
-      <!-- Sección izquierda -->
       <div class="seccion-equipos">
         <div class="titulo-seccion">Equipos de cómputo</div>
         <table class="tabla-wireframe">
@@ -31,7 +30,6 @@
         </div>
       </div>
 
-      <!-- Sección derecha -->
       <div class="seccion-derecha">
         <div class="alerta-antivirus">Próximos antivirus por expirar:</div>
         <div class="resumen-wireframe">

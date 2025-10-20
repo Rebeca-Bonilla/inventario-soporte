@@ -3,11 +3,11 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-// Importar todos los estilos
 import './styles/global.css'
+import './styles/layout.css'
 import './styles/login.css'
 import './styles/dashboard.css'
-import './styles/registro.css'
+import './styles/registros.css'
 import './styles/consulta.css'
 import './styles/importacion.css'
 import './styles/reportes.css'
