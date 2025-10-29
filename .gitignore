@@ -28,3 +28,13 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Base de datos y archivos sensibles  ← NUEVO
+/database/
+*.sql
+*.db
+.env
+.env.*
+!.env.example
+config.php
+/backend/api.php

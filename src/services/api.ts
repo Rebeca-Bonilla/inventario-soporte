@@ -1,6 +1,5 @@
 const API_BASE_URL = 'http://localhost/inventario-soporte-api'
 
-// Interface para los datos del equipo
 export interface EquipoData {
   categoria: string
   usuario: string
@@ -19,23 +18,52 @@ export interface EquipoData {
 
 export const apiService = {
   async getEquipos(categoria?: string) {
-    const url = categoria
-      ? `${API_BASE_URL}/api.php?categoria=${categoria}`
-      : `${API_BASE_URL}/api.php`
+    try {
+      const url = categoria
+        ? `${API_BASE_URL}/api.php?categoria=${encodeURIComponent(categoria)}`
+        : `${API_BASE_URL}/api.php`
 
-    const response = await fetch(url)
-    return await response.json()
+      console.log('🔍 Fetching URL:', url)
+
+      const response = await fetch(url)
+      const data = await response.json()
+
+      console.log('📨 API Response:', data)
+
+      if (!data.success) {
+        throw new Error(data.error || 'Error al obtener equipos')
+      }
+
+      return data.data
+    } catch (error) {
+      console.error('❌ Error fetching equipos:', error)
+      throw error
+    }
   },
 
   async crearEquipo(equipoData: EquipoData) {
-    const response = await fetch(`${API_BASE_URL}/api.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(equipoData),
-    })
+    try {
+      console.log('🚀 Enviando equipo:', equipoData)
 
-    return await response.json()
+      const response = await fetch(`${API_BASE_URL}/api.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(equipoData),
+      })
+
+      const data = await response.json()
+      console.log('📨 Respuesta creación:', data)
+
+      if (!data.success) {
+        throw new Error(data.error || 'Error al crear equipo')
+      }
+
+      return data
+    } catch (error) {
+      console.error('❌ Error creating equipo:', error)
+      throw error
+    }
   },
 }
