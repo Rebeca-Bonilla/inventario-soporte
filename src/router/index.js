@@ -12,7 +12,7 @@ const routes = [
   },
   {
     path: '/registro',
-    component: () => import('../views/RegistroEquipos.vue'),
+    component: () => import('../views/RegistroEquipos.vue'), // ← Este es el correcto
   },
   {
     path: '/consulta',
