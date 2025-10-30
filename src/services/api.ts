@@ -36,14 +36,14 @@ export const apiService = {
 
       return data.data
     } catch (error) {
-      console.error('❌ Error fetching equipos:', error)
+      console.error('Error fetching equipos:', error)
       throw error
     }
   },
 
   async crearEquipo(equipoData: EquipoData) {
     try {
-      console.log('🚀 Enviando equipo:', equipoData)
+      console.log('Enviando equipo:', equipoData)
 
       const response = await fetch(`${API_BASE_URL}/api.php`, {
         method: 'POST',
@@ -54,7 +54,7 @@ export const apiService = {
       })
 
       const data = await response.json()
-      console.log('📨 Respuesta creación:', data)
+      console.log('Respuesta creación:', data)
 
       if (!data.success) {
         throw new Error(data.error || 'Error al crear equipo')
@@ -62,7 +62,7 @@ export const apiService = {
 
       return data
     } catch (error) {
-      console.error('❌ Error creating equipo:', error)
+      console.error('Error creating equipo:', error)
       throw error
     }
   },

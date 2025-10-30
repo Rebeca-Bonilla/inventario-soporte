@@ -1,3 +1,4 @@
+/* src/styles/consulta.css - ACTUALIZADO */
 .consulta-wireframe {
   padding: 20px;
 }
@@ -71,4 +72,65 @@
 
 .tabla-wireframe td {
   height: 25px;
+}
+
+/* Agrega estos estilos que faltan */
+.contador-resultados {
+  margin: 10px 0;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+
+.sin-datos {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.estado-activo {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.estado-inactivo {
+  color: #6c757d;
+}
+
+.estado-mantenimiento {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.estado-dañado {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.input-edicion {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #007bff;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.btn-guardar,
+.btn-eliminar {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin: 0 2px;
+}
+
+.btn-guardar {
+  background: #28a745;
+  color: white;
+}
+
+.btn-eliminar {
+  background: #dc3545;
+  color: white;
 }
