@@ -1,15 +1,7 @@
 <template>
-  <router-view />
+  <AppLayout />
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: 'App',
-})
+<script setup lang="ts">
+import AppLayout from './components/layout/AppLayout.vue'
 </script>
-
-<style>
-/* Estilos globales se importan en main.js */
-</style>

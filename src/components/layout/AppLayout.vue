@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { useSessionStore } from '@/stores/session'
+import { useSessionStore } from '../../stores/session'
 import NavbarView from './NavbarView.vue'
 
 const session = useSessionStore()
@@ -23,6 +23,6 @@ const session = useSessionStore()
 
 .main-content {
   flex: 1;
-  padding: 2rem;
+  background: var(--color-white);
 }
 </style>
