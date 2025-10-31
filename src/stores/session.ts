@@ -1,81 +1,75 @@
+// src/stores/session.ts
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-
-interface User {
-  id: number
-  email: string
-  name: string
-  role: string
-}
+import { ref } from 'vue'
+import type { LoginCredentials, User, UserBasicInfo } from '@/types/auth'
+import { authService } from '@/services/authService'
 
 export const useSessionStore = defineStore('session', () => {
   const user = ref<User | null>(null)
-  const token = ref<string | null>(null)
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const userName = computed(() => user.value?.name || 'Usuario')
-
-  const login = async (email: string, password: string) => {
-    isLoading.value = true
-    error.value = null
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      if (email === 'admin@inventario.com' && password === 'Admin123!') {
-        const userData: User = {
-          id: 1,
-          email: email,
-          name: 'Administrador',
-          role: 'admin',
-        }
-
-        user.value = userData
-        token.value = 'demo-token'
-        localStorage.setItem('auth_token', 'demo-token')
-
-        return { success: true, user: userData }
-      } else {
-        throw new Error('Credenciales inválidas')
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Error de autenticación'
-      return { success: false, error: error.value }
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  const logout = () => {
-    user.value = null
-    token.value = null
-    localStorage.removeItem('auth_token')
-  }
+  const isAuthenticated = ref(false)
+  const hasUnsavedChanges = ref(false)
+  const isInitialized = ref(false)
 
   const initializeAuth = () => {
-    const savedToken = localStorage.getItem('auth_token')
-    if (savedToken) {
-      token.value = savedToken
-      user.value = {
-        id: 1,
-        email: 'admin@inventario.com',
-        name: 'Administrador',
-        role: 'admin',
+    const savedUser = localStorage.getItem('user')
+    const savedAuth = localStorage.getItem('isAuthenticated')
+
+    if (savedUser && savedAuth === 'true') {
+      user.value = JSON.parse(savedUser)
+      isAuthenticated.value = true
+    }
+    isInitialized.value = true
+  }
+
+  const userInfo = (): UserBasicInfo => {
+    if (!user.value) {
+      return {
+        username: 'Invitado',
+        role: 'Usuario',
       }
     }
+    return {
+      username: user.value.username,
+      role: user.value.role,
+    }
+  }
+
+  const login = async (credentials: LoginCredentials): Promise<void> => {
+    try {
+      const userData = await authService.login(credentials)
+
+      if (userData) {
+        user.value = userData
+        isAuthenticated.value = true
+        hasUnsavedChanges.value = false
+
+        localStorage.setItem('user', JSON.stringify(userData))
+        localStorage.setItem('isAuthenticated', 'true')
+      } else {
+        throw new Error('Credenciales incorrectas')
+      }
+    } catch (error) {
+      throw new Error('Error de autenticación. Verifique sus credenciales.')
+    }
+  }
+
+  const logout = (): void => {
+    user.value = null
+    isAuthenticated.value = false
+    hasUnsavedChanges.value = false
+
+    localStorage.removeItem('user')
+    localStorage.removeItem('isAuthenticated')
   }
 
   return {
     user,
-    token,
-    isLoading,
-    error,
     isAuthenticated,
-    userName,
+    hasUnsavedChanges,
+    isInitialized,
+    userInfo,
+    initializeAuth,
     login,
     logout,
-    initializeAuth,
   }
 })

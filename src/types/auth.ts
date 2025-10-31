@@ -1,19 +1,17 @@
-// types/auth.ts
-export interface User {
-  id: number
-  email: string
-  name: string
-  role: string
-}
-
+// src/types/auth.ts
 export interface LoginCredentials {
-  email: string
+  username: string
   password: string
 }
 
-export interface AuthResponse {
-  success: boolean
-  user?: User
-  token?: string
-  error?: string
+export interface User {
+  username: string
+  role: string
+  loginTime: string
+}
+
+// Tipo para la información básica del usuario (sin campos opcionales)
+export interface UserBasicInfo {
+  username: string
+  role: string
 }

@@ -1,3 +1,4 @@
+// src/main.ts
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
@@ -11,9 +12,5 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-
-import { useSessionStore } from './stores/session'
-const sessionStore = useSessionStore()
-sessionStore.initializeAuth()
 
 app.mount('#app')

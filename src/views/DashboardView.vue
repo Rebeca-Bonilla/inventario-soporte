@@ -1,259 +1,476 @@
+<!-- src/views/DashboardView.vue -->
 <template>
-  <div class="dashboard-container">
+  <div class="dashboard">
+    <!-- Header con título -->
     <div class="dashboard-header">
-      <h1>Dashboard del Sistema</h1>
-      <p>Resumen general del inventario</p>
+      <h1>HOME</h1>
     </div>
 
-    <!-- Tarjetas de resumen -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-content">
-          <h3>Equipos de Cómputo</h3>
-          <div class="stat-numbers">
-            <span class="stat-main">156</span>
-            <span class="stat-secondary">+12 este mes</span>
+    <div class="dashboard-content">
+      <!-- Sidebar con menú -->
+      <div class="sidebar tech-border">
+        <div class="user-info">
+          <div class="user-avatar">
+            <span>{{ userInitials }}</span>
           </div>
+          <div class="user-details">
+            <h3>{{ sessionStore.userInfo().username }}</h3>
+            <p>{{ sessionStore.userInfo().role }}</p>
+          </div>
+        </div>
+
+        <div class="session-timer tech-border">
+          <div class="timer-display">
+            <span><strong>Tiempo:</strong> {{ currentTime }}</span>
+            <span><strong>Límite:</strong> 30:00</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-menu">
+          <h4>Navegación</h4>
+          <ul>
+            <li
+              v-for="item in menuItems"
+              :key="item.key"
+              :class="{ active: $route.name === item.route }"
+              @click="navigateTo(item.route)"
+            >
+              {{ item.label }}
+            </li>
+          </ul>
+        </nav>
+
+        <div class="sidebar-actions">
+          <button @click="goHome" class="btn-secondary">🏠 Home</button>
+          <button @click="goBack" class="btn-secondary">↩️ Atrás</button>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-content">
-          <h3>Teléfonos</h3>
-          <div class="stat-numbers">
-            <span class="stat-main">89</span>
-            <span class="stat-secondary">+5 este mes</span>
+      <!-- Contenido principal -->
+      <div class="main-content">
+        <!-- Resumen de equipos -->
+        <div class="summary-section tech-border tech-shadow">
+          <h2>Resumen</h2>
+          <div class="summary-grid">
+            <div class="summary-card" v-for="item in summaryItems" :key="item.name">
+              <div class="summary-icon">{{ item.icon }}</div>
+              <div class="summary-info">
+                <h3>{{ item.name }}</h3>
+                <span class="summary-count">{{ item.count }}</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="stat-card">
-        <div class="stat-content">
-          <h3>Monitores</h3>
-          <div class="stat-numbers">
-            <span class="stat-main">67</span>
-            <span class="stat-secondary">Sin cambios</span>
+        <!-- Cambios recientes -->
+        <div class="changes-section tech-border tech-shadow">
+          <div class="section-header">
+            <h2>Cambios recientes</h2>
+            <button class="btn-secondary" @click="viewAllChanges">Ver todos</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Cambio realizado</th>
+                  <th>Usuario</th>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="i in 10" :key="i">
+                  <td>{{ i }}</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>D-M-A</td>
+                  <td>00:00:00</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
 
-      <div class="stat-card">
-        <div class="stat-content">
-          <h3>En Mantenimiento</h3>
-          <div class="stat-numbers">
-            <span class="stat-main">23</span>
-            <span class="stat-secondary">+3 pendientes</span>
+        <!-- Antivirus por expirar -->
+        <div class="antivirus-section tech-border tech-shadow">
+          <div class="section-header">
+            <h2>Próximos antivirus por expirar:</h2>
+            <div class="antivirus-period">
+              <strong>Próximos</strong>
+              <strong>meses</strong>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Equipo</th>
+                  <th>Usuario</th>
+                  <th>N/S</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="i in 4" :key="i">
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Sección de actividad reciente -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <h2>Actividad Reciente</h2>
-      </div>
-      <div class="activity-list">
-        <div class="activity-item">
-          <div class="activity-content">
-            <p><strong>Nuevo equipo registrado</strong> - Laptop ThinkPad T14</p>
-            <span class="activity-time">Hace 2 horas</span>
-          </div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-content">
-            <p><strong>Equipo actualizado</strong> - Monitor Dell U2419H</p>
-            <span class="activity-time">Hace 5 horas</span>
-          </div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-content">
-            <p><strong>Equipo en mantenimiento</strong> - iPhone 13</p>
-            <span class="activity-time">Ayer</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Acciones rápidas -->
-    <div class="dashboard-section">
-      <h2>Acciones Rápidas</h2>
-      <div class="quick-actions">
-        <router-link to="/registro" class="quick-action">
-          <span>Registrar Equipo</span>
-        </router-link>
-        <router-link to="/importacion" class="quick-action">
-          <span>Importar Datos</span>
-        </router-link>
-        <router-link to="/reportes" class="quick-action">
-          <span>Generar Reporte</span>
-        </router-link>
-        <router-link to="/equipos" class="quick-action">
-          <span>Consultar Equipos</span>
-        </router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// El dashboard mostrará datos reales cuando conectemos con la BD
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useSessionStore } from '@/stores/session'
+
+const router = useRouter()
+const sessionStore = useSessionStore()
+
+// Datos del resumen
+const summaryItems = ref([
+  { name: 'Equipos de cómputo', count: '-', icon: '💻' },
+  { name: 'Monitores', count: '-', icon: '🖥️' },
+  { name: 'Teclados', count: '-', icon: '⌨️' },
+  { name: 'Teléfonos', count: '-', icon: '📱' },
+])
+
+// Menú de navegación
+const menuItems = ref([
+  { key: 'registro', label: '📝 Registro', route: 'registro' },
+  { key: 'consulta', label: '🔍 Consulta', route: 'consulta' },
+  { key: 'archivados', label: '📁 Archivados', route: 'archivados' },
+  { key: 'importacion', label: '📤 Importación', route: 'importacion' },
+  { key: 'reportes', label: '📊 Reportes', route: 'reportes' },
+  { key: 'historial', label: '🕐 Historial', route: 'historial' },
+])
+
+// Tiempo actual
+const currentTime = ref('00:00')
+
+// Iniciales del usuario
+const userInitials = computed(() => {
+  const username = sessionStore.userInfo().username
+  return username
+    .split(' ')
+    .map((word) => word.charAt(0))
+    .join('')
+    .toUpperCase()
+    .substring(0, 2)
+})
+
+// Navegación
+const navigateTo = (route: string) => {
+  router.push(`/${route}`)
+}
+
+const goHome = () => {
+  router.push('/dashboard')
+}
+
+const goBack = () => {
+  router.go(-1)
+}
+
+const viewAllChanges = () => {
+  router.push('/historial')
+}
+
+// Actualizar hora actual
+let timeInterval: number
+
+onMounted(() => {
+  updateCurrentTime()
+  timeInterval = setInterval(updateCurrentTime, 60000) // Actualizar cada minuto
+})
+
+onUnmounted(() => {
+  clearInterval(timeInterval)
+})
+
+const updateCurrentTime = () => {
+  const now = new Date()
+  currentTime.value = now.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 </script>
 
 <style scoped>
-.dashboard-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: var(--color-white);
-  min-height: calc(100vh - 80px);
-}
-
-.dashboard-header {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 2rem 0;
-  border-bottom: 2px solid var(--color-gray-light);
+.dashboard {
+  padding: 1rem;
+  min-height: 100vh;
+  background-color: var(--color-light-gray);
 }
 
 .dashboard-header h1 {
-  color: var(--color-text-dark);
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-
-.dashboard-header p {
-  color: var(--color-primary-lila);
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-/* Grid de estadísticas - diseño limpio */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-
-.stat-card {
-  background: var(--color-white);
-  padding: 2rem;
-  border-radius: 12px;
-  border: 2px solid var(--color-gray-light);
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.stat-card:hover {
-  border-color: var(--color-primary-mint);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(163, 217, 213, 0.2);
-}
-
-.stat-content h3 {
-  color: var(--color-text-dark);
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.stat-numbers {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.stat-main {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: var(--color-accent-green);
-  line-height: 1;
-}
-
-.stat-secondary {
-  font-size: 0.9rem;
-  color: var(--color-primary-lila);
-  font-weight: 500;
-}
-
-/* Secciones */
-.dashboard-section {
-  margin-bottom: 3rem;
-  background: var(--color-white);
-  padding: 2rem;
-  border-radius: 12px;
-  border: 2px solid var(--color-gray-light);
-}
-
-.dashboard-section h2 {
-  color: var(--color-text-dark);
+  color: var(--color-dark-text);
   margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  border-bottom: 1px solid var(--color-gray-light);
+  font-size: 2rem;
+  border-bottom: 3px solid var(--color-primary);
   padding-bottom: 0.5rem;
 }
 
-/* Lista de actividad */
-.activity-list {
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  height: calc(100vh - 120px);
+}
+
+/* Sidebar Styles */
+.sidebar {
+  background: var(--color-white);
+  padding: 1.5rem;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 
-.activity-item {
-  padding: 1.2rem;
-  background: var(--color-gray-light);
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--color-light-gray);
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-info));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  font-weight: bold;
+  color: var(--color-white);
+  font-size: 1.2rem;
+}
+
+.user-details h3 {
+  margin: 0;
+  color: var(--color-dark-text);
+  font-size: 1.1rem;
+}
+
+.user-details p {
+  margin: 0;
+  color: var(--color-secondary);
+  font-size: 0.9rem;
+}
+
+.session-timer {
+  background: var(--color-light-gray);
+  padding: 1rem;
   border-radius: 8px;
-  border-left: 4px solid var(--color-secondary-blue);
-  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
 }
 
-.activity-item:hover {
-  background: var(--color-primary-mint);
+.timer-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-dark-text);
+}
+
+.sidebar-menu {
+  flex-grow: 1;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-menu h4 {
+  color: var(--color-dark-text);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  color: var(--color-dark-text);
+  border: 1px solid transparent;
+}
+
+.sidebar-menu li:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
   transform: translateX(5px);
 }
 
-.activity-content p {
-  margin: 0;
-  color: var(--color-text-dark);
-  font-size: 0.95rem;
-  margin-bottom: 0.3rem;
+.sidebar-menu li.active {
+  background-color: var(--color-success);
+  color: var(--color-white);
+  border-color: var(--color-success);
 }
 
-.activity-time {
-  font-size: 0.8rem;
-  color: var(--color-primary-lila);
-  font-weight: 500;
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-/* Acciones rápidas */
-.quick-actions {
+/* Main Content Styles */
+.main-content {
+  display: grid;
+  grid-template-rows: auto 1fr 1fr;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+.summary-section,
+.changes-section,
+.antivirus-section {
+  background: var(--color-white);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.summary-section h2,
+.changes-section h2,
+.antivirus-section h2 {
+  color: var(--color-dark-text);
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--color-secondary);
+  padding-bottom: 0.5rem;
+}
+
+/* Summary Grid */
+.summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
 }
 
-.quick-action {
-  background: var(--color-accent-green);
-  color: var(--color-white);
-  padding: 1.5rem;
+.summary-card {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: var(--color-light-gray);
   border-radius: 8px;
-  text-decoration: none;
-  text-align: center;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  border-left: 4px solid var(--color-success);
+  transition: transform 0.3s ease;
 }
 
-.quick-action:hover {
-  background: var(--color-white);
-  color: var(--color-accent-green);
-  border-color: var(--color-accent-green);
+.summary-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(93, 138, 127, 0.3);
+}
+
+.summary-icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+}
+
+.summary-info h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-dark-text);
+  opacity: 0.8;
+}
+
+.summary-count {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--color-success);
+}
+
+/* Section Headers */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.antivirus-period {
+  display: flex;
+  gap: 2rem;
+  color: var(--color-dark-text);
+}
+
+/* Tables */
+.table-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--color-light-gray);
+  border-radius: 8px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  background-color: var(--color-primary);
+  color: var(--color-dark-text);
+  font-weight: 600;
+  padding: 0.75rem;
+  text-align: left;
+  position: sticky;
+  top: 0;
+}
+
+.data-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-light-gray);
+  color: var(--color-dark-text);
+}
+
+.data-table tr:hover {
+  background-color: var(--color-light-gray);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    order: 2;
+  }
+
+  .main-content {
+    order: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
 }
 </style>
