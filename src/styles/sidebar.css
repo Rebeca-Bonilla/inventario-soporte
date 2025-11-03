@@ -1,0 +1,169 @@
+/* src/styles/sidebar.css */
+.app-sidebar {
+  width: 280px;
+  background: #34495e;
+  color: white;
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.sidebar-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
+  color: #ecf0f1;
+  border-bottom: 1px solid #4a6572;
+  padding-bottom: 8px;
+}
+
+/* Información de sesión */
+.session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.user-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: #2c3e50;
+  border-radius: 8px;
+}
+
+.user-avatar {
+  font-size: 1.5em;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.user-role {
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+.timer-display {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  background: #2c3e50;
+  border-radius: 8px;
+}
+
+.timer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timer-label {
+  font-size: 0.9em;
+  color: #bdc3c7;
+}
+
+.timer-value {
+  font-weight: bold;
+  color: #3498db;
+}
+
+/* Botones de control */
+.control-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-btn {
+  background: #2c3e50;
+  color: white;
+  border: none;
+  padding: 12px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-btn:hover {
+  transform: translateX(3px);
+}
+
+.home-btn:hover {
+  background: #3498db;
+}
+
+.back-btn:hover {
+  background: #f39c12;
+}
+
+.logout-btn:hover {
+  background: #e74c3c;
+}
+
+/* Sistema info */
+.system-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.info-label {
+  font-size: 0.9em;
+  color: #bdc3c7;
+}
+
+.info-value {
+  font-weight: bold;
+  color: #3498db;
+}
+
+/* Acciones rápidas */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quick-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.3s;
+  font-size: 0.9em;
+}
+
+.quick-btn:hover {
+  background: #2980b9;
+  transform: translateX(3px);
+}

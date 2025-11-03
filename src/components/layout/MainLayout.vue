@@ -1,5 +1,25 @@
-<!-- En: /src/layouts/MainLayout.vue -->
+<template>
+  <div class="main-layout">
+    <!-- Header horizontal -->
+    <AppHeader />
+
+    <div class="layout-body">
+      <!-- Sidebar lateral -->
+      <AppSidebar />
+
+      <!-- Contenido principal -->
+      <main class="main-content">
+        <router-view />
+      </main>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
-import AppHeader from '@/components/AppHeader.vue';
-import AppSidebar from '@/components/layout/AppSidebar.vue';
+import AppHeader from '../AppHeader.vue'
+import AppSidebar from './AppSidebar.vue'
 </script>
+
+<style scoped>
+@import '@/styles/layout.css';
+</style>
