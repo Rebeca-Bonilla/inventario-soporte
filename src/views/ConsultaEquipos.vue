@@ -1,117 +1,115 @@
 <template>
-  <AppLayout>
-    <div class="consulta-wireframe">
-      <div class="titulo-pagina">CONSULTA</div>
+  <div class="consulta-wireframe">
+    <div class="titulo-pagina">CONSULTA</div>
 
-      <div class="barra-herramientas">
-        <button class="btn-herramienta" @click="aplicarFiltros">Filtrar</button>
-        <button class="btn-herramienta" @click="exportarDatos">Exportar</button>
-        <button class="btn-herramienta" @click="modoEdicion = !modoEdicion">
-          {{ modoEdicion ? 'Cancelar' : 'Editar' }}
-        </button>
+    <div class="barra-herramientas">
+      <button class="btn-herramienta" @click="aplicarFiltros">Filtrar</button>
+      <button class="btn-herramienta" @click="exportarDatos">Exportar</button>
+      <button class="btn-herramienta" @click="modoEdicion = !modoEdicion">
+        {{ modoEdicion ? 'Cancelar' : 'Editar' }}
+      </button>
 
-        <div class="tabs-consulta">
-          <div
-            v-for="cat in categorias"
-            :key="cat"
-            :class="['tab-consulta', categoriaActiva === cat ? 'activa' : '']"
-            @click="categoriaActiva = cat"
-          >
-            {{ cat }}
-          </div>
+      <div class="tabs-consulta">
+        <div
+          v-for="cat in categorias"
+          :key="cat"
+          :class="['tab-consulta', categoriaActiva === cat ? 'activa' : '']"
+          @click="categoriaActiva = cat"
+        >
+          {{ cat }}
         </div>
       </div>
-
-      <!-- Contador de resultados -->
-      <div class="contador-resultados">
-        Mostrando {{ equiposFiltrados.length }} de {{ equipos.length }} equipos
-      </div>
-
-      <div class="tabla-consulta-container">
-        <table class="tabla-wireframe">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Usuario</th>
-              <th>Centro Trabajo</th>
-              <th>Marca</th>
-              <th>Modelo</th>
-              <th>N/S</th>
-              <th v-if="mostrarCampo('ram')">RAM</th>
-              <th v-if="mostrarCampo('almacenamiento')">Almacenamiento</th>
-              <th v-if="mostrarCampo('procesador')">Procesador</th>
-              <th v-if="mostrarCampo('numeroCelular')">Núm. Celular</th>
-              <th v-if="mostrarCampo('dimension')">Dimensión</th>
-              <th v-if="mostrarCampo('puertosDisponibles')">Puertos</th>
-              <th v-if="mostrarCampo('tipoCamara')">Tipo Cámara</th>
-              <th v-if="mostrarCampo('direccionMacIp')">MAC/IP</th>
-              <th>Estado</th>
-              <th>Colaborador</th>
-              <th>Ubicación</th>
-              <th>Observaciones</th>
-              <th v-if="modoEdicion">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Datos REALES de la BD -->
-            <tr v-for="equipo in equiposFiltrados" :key="equipo.id">
-              <!-- Campos editables o estáticos -->
-              <td>
-                <span v-if="!modoEdicion">{{ equipo.codigo }}</span>
-                <input v-else v-model="equipo.codigo" class="input-edicion" />
-              </td>
-              <td>
-                <span v-if="!modoEdicion">{{ equipo.usuario }}</span>
-                <input v-else v-model="equipo.usuario" class="input-edicion" />
-              </td>
-              <td>{{ equipo.centroTrabajo }}</td>
-              <td>{{ equipo.marca }}</td>
-              <td>{{ equipo.modelo }}</td>
-              <td>{{ equipo.nSerie }}</td>
-
-              <!-- Campos específicos dinámicos -->
-              <td v-if="mostrarCampo('ram')">{{ equipo.ram }}</td>
-              <td v-if="mostrarCampo('almacenamiento')">{{ equipo.almacenamiento }}</td>
-              <td v-if="mostrarCampo('procesador')">{{ equipo.procesador }}</td>
-              <td v-if="mostrarCampo('numeroCelular')">{{ equipo.numeroCelular }}</td>
-              <td v-if="mostrarCampo('dimension')">{{ equipo.dimension }}</td>
-              <td v-if="mostrarCampo('puertosDisponibles')">{{ equipo.puertosDisponibles }}</td>
-              <td v-if="mostrarCampo('tipoCamara')">{{ equipo.tipoCamara }}</td>
-              <td v-if="mostrarCampo('direccionMacIp')">{{ equipo.direccionMacIp }}</td>
-
-              <td>
-                <span :class="`estado-${equipo.estado.toLowerCase()}`">
-                  {{ equipo.estado }}
-                </span>
-              </td>
-              <td>{{ equipo.colaborador }}</td>
-              <td>{{ equipo.ubicacion }}</td>
-              <td>{{ equipo.observaciones }}</td>
-
-              <!-- Acciones en modo edición -->
-              <td v-if="modoEdicion">
-                <button @click="guardarCambios(equipo)" class="btn-guardar">💾</button>
-                <button @click="eliminarEquipo(equipo.id!)" class="btn-eliminar">🗑️</button>
-              </td>
-            </tr>
-
-            <!-- Mensaje si no hay datos -->
-            <tr v-if="equiposFiltrados.length === 0">
-              <td :colspan="modoEdicion ? 19 : 18" class="sin-datos">
-                📝 No hay equipos registrados en {{ categoriaActiva }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
-  </AppLayout>
+
+    <!-- Contador de resultados -->
+    <div class="contador-resultados">
+      Mostrando {{ equiposFiltrados.length }} de {{ equipos.length }} equipos
+    </div>
+
+    <div class="tabla-consulta-container">
+      <table class="tabla-wireframe">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Usuario</th>
+            <th>Centro Trabajo</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>N/S</th>
+            <th v-if="mostrarCampo('ram')">RAM</th>
+            <th v-if="mostrarCampo('almacenamiento')">Almacenamiento</th>
+            <th v-if="mostrarCampo('procesador')">Procesador</th>
+            <th v-if="mostrarCampo('numeroCelular')">Núm. Celular</th>
+            <th v-if="mostrarCampo('dimension')">Dimensión</th>
+            <th v-if="mostrarCampo('puertosDisponibles')">Puertos</th>
+            <th v-if="mostrarCampo('tipoCamara')">Tipo Cámara</th>
+            <th v-if="mostrarCampo('direccionMacIp')">MAC/IP</th>
+            <th>Estado</th>
+            <th>Colaborador</th>
+            <th>Ubicación</th>
+            <th>Observaciones</th>
+            <th v-if="modoEdicion">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Datos REALES de la BD -->
+          <tr v-for="equipo in equiposFiltrados" :key="equipo.id">
+            <!-- Campos editables o estáticos -->
+            <td>
+              <span v-if="!modoEdicion">{{ equipo.codigo }}</span>
+              <input v-else v-model="equipo.codigo" class="input-edicion" />
+            </td>
+            <td>
+              <span v-if="!modoEdicion">{{ equipo.usuario }}</span>
+              <input v-else v-model="equipo.usuario" class="input-edicion" />
+            </td>
+            <td>{{ equipo.centroTrabajo }}</td>
+            <td>{{ equipo.marca }}</td>
+            <td>{{ equipo.modelo }}</td>
+            <td>{{ equipo.nSerie }}</td>
+
+            <!-- Campos específicos dinámicos -->
+            <td v-if="mostrarCampo('ram')">{{ equipo.ram }}</td>
+            <td v-if="mostrarCampo('almacenamiento')">{{ equipo.almacenamiento }}</td>
+            <td v-if="mostrarCampo('procesador')">{{ equipo.procesador }}</td>
+            <td v-if="mostrarCampo('numeroCelular')">{{ equipo.numeroCelular }}</td>
+            <td v-if="mostrarCampo('dimension')">{{ equipo.dimension }}</td>
+            <td v-if="mostrarCampo('puertosDisponibles')">{{ equipo.puertosDisponibles }}</td>
+            <td v-if="mostrarCampo('tipoCamara')">{{ equipo.tipoCamara }}</td>
+            <td v-if="mostrarCampo('direccionMacIp')">{{ equipo.direccionMacIp }}</td>
+
+            <td>
+              <span :class="`estado-${equipo.estado.toLowerCase()}`">
+                {{ equipo.estado }}
+              </span>
+            </td>
+            <td>{{ equipo.colaborador }}</td>
+            <td>{{ equipo.ubicacion }}</td>
+            <td>{{ equipo.observaciones }}</td>
+
+            <!-- Acciones en modo edición -->
+            <td v-if="modoEdicion">
+              <button @click="guardarCambios(equipo)" class="btn-guardar">💾</button>
+              <button @click="eliminarEquipo(equipo.id!)" class="btn-eliminar">🗑️</button>
+            </td>
+          </tr>
+
+          <!-- Mensaje si no hay datos -->
+          <tr v-if="equiposFiltrados.length === 0">
+            <td :colspan="modoEdicion ? 19 : 18" class="sin-datos">
+              📝 No hay equipos registrados en {{ categoriaActiva }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import AppLayout from '../components/layout/AppLayout.vue'
-import '../styles/consulta.css' // ← Agrega esta línea
+import '../styles/consulta.css'
+
 interface Equipo {
   id?: number
   codigo: string
@@ -138,9 +136,6 @@ interface Equipo {
 
 export default defineComponent({
   name: 'ConsultaEquipos',
-  components: {
-    AppLayout,
-  },
   data() {
     return {
       categoriaActiva: 'Cómputo',
@@ -168,7 +163,6 @@ export default defineComponent({
   },
   methods: {
     cargarEquipos() {
-      // 🔥 Cargar datos REALES de localStorage
       const equiposGuardados = JSON.parse(localStorage.getItem('equipos') || '[]')
       this.equipos = equiposGuardados
       this.filtrarEquipos()
@@ -185,14 +179,13 @@ export default defineComponent({
     },
 
     mostrarCampo(campo: string): boolean {
-      // Mostrar campos según el tipo de equipo seleccionado
       const camposPorTipo: { [key: string]: string[] } = {
         Cómputo: ['ram', 'almacenamiento', 'procesador'],
         Teléfonos: ['numeroCelular'],
         Monitores: ['dimension', 'puertosDisponibles'],
         Cámaras: ['tipoCamara', 'direccionMacIp'],
-        Tablets: [], // Agregar campos específicos si los tienes
-        Terminales: [], // Agregar campos específicos si los tienes
+        Tablets: [],
+        Terminales: [],
         otros: [],
       }
 
@@ -200,7 +193,6 @@ export default defineComponent({
     },
 
     aplicarFiltros() {
-      // Aquí puedes agregar más filtros avanzados
       this.filtrarEquipos()
       alert(`Filtros aplicados - ${this.equiposFiltrados.length} equipos encontrados`)
     },
@@ -217,7 +209,6 @@ export default defineComponent({
     },
 
     guardarCambios(equipo: Equipo) {
-      // Actualizar en localStorage
       const index = this.equipos.findIndex((e) => e.id === equipo.id)
       if (index !== -1) {
         this.equipos[index] = { ...equipo }

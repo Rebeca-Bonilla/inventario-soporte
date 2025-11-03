@@ -1,147 +1,203 @@
-<!-- src/components/layout/AppLayout.vue -->
 <template>
-  <div class="app-layout">
-    <NavbarView
-      :user="userInfo"
-      :current-time="currentTime"
-      :remaining-time="remainingTime"
-      @navigate="handleNavigation"
-      @logout="handleLogout"
-    />
+  <aside class="app-sidebar">
+    <div class="sidebar-content">
+      <!-- Información del sistema -->
+      <div class="sidebar-section">
+        <h3>Información del Sistema</h3>
+        <div class="system-info">
+          <div class="info-item">
+            <span class="info-label">Equipos activos:</span>
+            <span class="info-value">45</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Usuarios:</span>
+            <span class="info-value">23</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Última actualización:</span>
+            <span class="info-value">Hoy</span>
+          </div>
+        </div>
+      </div>
 
-    <main class="main-content">
-      <router-view />
-    </main>
+      <!-- Acciones rápidas -->
+      <div class="sidebar-section">
+        <h3>Acciones Rápidas</h3>
+        <div class="quick-actions">
+          <button class="quick-btn" @click="nuevoEquipo">➕ Nuevo Equipo</button>
+          <button class="quick-btn" @click="generarReporte">📊 Generar Reporte</button>
+          <button class="quick-btn" @click="buscarAvanzado">🔍 Búsqueda Avanzada</button>
+        </div>
+      </div>
 
-    <!-- Modal de confirmación para cambios no guardados -->
-    <div v-if="showConfirmationModal" class="modal-overlay">
-      <div class="modal tech-border tech-shadow">
-        <h3>Confirmar acción</h3>
-        <p>{{ confirmationMessage }}</p>
-        <div class="modal-actions">
-          <button @click="confirmAction" class="btn-primary">Sí, continuar</button>
-          <button @click="cancelAction" class="btn-secondary">Cancelar</button>
+      <!-- Filtros comunes -->
+      <div class="sidebar-section">
+        <h3>Filtros Rápidos</h3>
+        <div class="filters">
+          <div class="filter-group">
+            <label>Por Estado:</label>
+            <select class="filter-select">
+              <option>Todos</option>
+              <option>Activo</option>
+              <option>Inactivo</option>
+              <option>Mantenimiento</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Por Ubicación:</label>
+            <select class="filter-select">
+              <option>Todas</option>
+              <option>Sede Central</option>
+              <option>Sucursal Norte</option>
+              <option>Sucursal Sur</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enlaces de ayuda -->
+      <div class="sidebar-section">
+        <h3>Ayuda</h3>
+        <div class="help-links">
+          <a href="#" class="help-link">📖 Manual de Usuario</a>
+          <a href="#" class="help-link">❓ Soporte Técnico</a>
+          <a href="#" class="help-link">🔄 Actualizar Sistema</a>
         </div>
       </div>
     </div>
-  </div>
+  </aside>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSessionStore } from '@/stores/session'
-import NavbarView from './NavbarView.vue'
-import type { UserBasicInfo } from '@/types/auth'
 
 const router = useRouter()
-const sessionStore = useSessionStore()
 
-const showConfirmationModal = ref(false)
-const pendingAction = ref<string | null>(null)
-const confirmationMessage = ref('')
-
-// Usar el getter que siempre retorna un objeto UserBasicInfo
-const userInfo = computed<UserBasicInfo>(() => sessionStore.userInfo())
-const currentTime = ref('00:00')
-const remainingTime = ref(1800) // 30 minutos
-
-let inactivityTimer: number
-
-const handleNavigation = (route: string) => {
-  if (sessionStore.hasUnsavedChanges) {
-    showConfirmationModal.value = true
-    pendingAction.value = route
-    confirmationMessage.value = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?'
-  } else {
-    router.push(`/${route}`)
-  }
+const nuevoEquipo = () => {
+  router.push('/registro')
 }
 
-const handleLogout = () => {
-  sessionStore.logout()
-  router.push('/login')
+const generarReporte = () => {
+  router.push('/reportes')
 }
 
-const confirmAction = () => {
-  if (pendingAction.value) {
-    router.push(`/${pendingAction.value}`)
-  }
-  showConfirmationModal.value = false
-  pendingAction.value = null
+const buscarAvanzado = () => {
+  // Lógica para búsqueda avanzada
+  alert('Búsqueda avanzada activada')
 }
-
-const cancelAction = () => {
-  showConfirmationModal.value = false
-  pendingAction.value = null
-}
-
-const resetInactivityTimer = () => {
-  clearTimeout(inactivityTimer)
-  inactivityTimer = setTimeout(() => {
-    sessionStore.logout()
-    router.push('/login')
-  }, remainingTime.value * 1000)
-}
-
-onMounted(() => {
-  // Inicializar timer de inactividad
-  resetInactivityTimer()
-
-  // Resetear timer en eventos de usuario
-  document.addEventListener('mousemove', resetInactivityTimer)
-  document.addEventListener('keypress', resetInactivityTimer)
-})
-
-onUnmounted(() => {
-  clearTimeout(inactivityTimer)
-  document.removeEventListener('mousemove', resetInactivityTimer)
-  document.removeEventListener('keypress', resetInactivityTimer)
-})
 </script>
 
 <style scoped>
-.app-layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex: 1;
-  background-color: var(--color-light-gray);
+.app-sidebar {
+  width: 280px;
+  background: #34495e;
+  color: white;
+  padding: 20px;
   overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+.sidebar-content {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.sidebar-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
+  color: #ecf0f1;
+  border-bottom: 1px solid #4a6572;
+  padding-bottom: 8px;
+}
+
+.system-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  z-index: 1000;
+  padding: 8px 0;
 }
 
-.modal {
-  background: var(--color-white);
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
+.info-label {
+  font-size: 0.9em;
+  color: #bdc3c7;
 }
 
-.modal h3 {
-  margin-bottom: 1rem;
-  color: var(--color-dark-text);
+.info-value {
+  font-weight: bold;
+  color: #3498db;
 }
 
-.modal-actions {
+.quick-actions {
   display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1.5rem;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quick-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.3s;
+  font-size: 0.9em;
+}
+
+.quick-btn:hover {
+  background: #2980b9;
+  transform: translateX(3px);
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-group label {
+  font-size: 0.9em;
+  color: #bdc3c7;
+}
+
+.filter-select {
+  background: #2c3e50;
+  color: white;
+  border: 1px solid #4a6572;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.help-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.help-link {
+  color: #bdc3c7;
+  text-decoration: none;
+  padding: 8px 0;
+  transition: color 0.3s;
+  font-size: 0.9em;
+}
+
+.help-link:hover {
+  color: #3498db;
 }
 </style>
