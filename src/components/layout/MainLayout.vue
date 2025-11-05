@@ -21,5 +21,22 @@ import AppSidebar from './AppSidebar.vue'
 </script>
 
 <style scoped>
-@import '@/styles/layout.css';
+.main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-body {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 70px);
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background: #f5f5f5;
+  overflow-y: auto;
+}
 </style>

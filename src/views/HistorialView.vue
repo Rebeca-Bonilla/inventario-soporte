@@ -32,7 +32,6 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'HistorialView',
-  // 👇 QUITAR el import y components
 })
 </script>
 

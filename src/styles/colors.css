@@ -1,0 +1,18 @@
+:root {
+  /* PALETA AZUL */
+  --azul-principal: #1e40af;
+  --azul-secundario: #3b82f6;
+  --azul-claro: #dbeafe;
+  --azul-hover: #2563eb;
+
+  /* Colores existentes - mantener igual */
+  --bg-white: #ffffff;
+  --bg-light: #f8fafc;
+  --border-gray: #e2e8f0;
+  --text-dark: #1e293b;
+  --text-light: #64748b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+}

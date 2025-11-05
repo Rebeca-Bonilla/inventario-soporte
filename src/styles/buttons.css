@@ -1,0 +1,45 @@
+/* Botones base wireframe */
+.btn-wireframe {
+  border: 2px solid var(--primary-blue);
+  background: var(--bg-white);
+  color: var(--primary-blue);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-wireframe:hover {
+  background: var(--primary-blue);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-wireframe.primary {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.btn-wireframe.primary:hover {
+  background: var(--secondary-blue);
+  border-color: var(--secondary-blue);
+}
+
+.btn-wireframe.secondary {
+  border-color: var(--secondary-blue);
+  color: var(--secondary-blue);
+}
+
+.btn-wireframe.small {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}
+
+.btn-wireframe.large {
+  padding: 14px 28px;
+  font-size: 1.125rem;
+}

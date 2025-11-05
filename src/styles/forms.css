@@ -1,0 +1,37 @@
+/* Inputs wireframe */
+.input-wireframe {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--border-gray);
+  border-radius: 6px;
+  background: var(--bg-white);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-wireframe:focus {
+  outline: none;
+  border-color: var(--secondary-blue);
+  box-shadow: 0 0 0 3px var(--light-blue);
+}
+
+.input-wireframe.error {
+  border-color: var(--error);
+}
+
+.input-wireframe.success {
+  border-color: var(--success);
+}
+
+/* Labels */
+.label-wireframe {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+/* Form groups */
+.form-group {
+  margin-bottom: 16px;
+}

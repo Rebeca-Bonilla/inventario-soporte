@@ -1,9 +1,8 @@
-/* src/styles/header.css */
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #2c3e50;
+  background: var(--primary-blue); /* 👈 AZUL */
   color: white;
   padding: 0 20px;
   height: 70px;
@@ -13,37 +12,7 @@
   z-index: 1000;
 }
 
-.header-left .logo {
-  margin: 0;
-  font-size: 1.4em;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.header-nav {
-  display: flex;
-  gap: 5px;
-  flex: 1;
-  justify-content: center;
-  margin: 0 20px;
-}
-
-.nav-item {
-  color: #ecf0f1;
-  text-decoration: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-  font-size: 0.9em;
-  white-space: nowrap;
-}
-
-.nav-item:hover {
-  background: #34495e;
-  transform: translateY(-2px);
-}
-
 .nav-item.router-link-active {
-  background: #3498db;
+  background: var(--azul-principal); /* 👈 SOLO ESTA LÍNEA */
   color: white;
 }
