@@ -1,4 +1,7 @@
 /* src/styles/global.css */
+@import './colors.css';
+/* @import './components.css'; */ /* ⬅️ COMENTA O ELIMINA ESTA LÍNEA */
+
 :root {
   /* Colores base */
   --color-white: #ffffff;
@@ -92,5 +95,3 @@ body {
   margin-top: 0.25rem;
   display: block;
 }
-
-@import './colors.css';
