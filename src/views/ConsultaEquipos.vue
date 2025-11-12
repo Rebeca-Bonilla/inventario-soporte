@@ -111,12 +111,12 @@ export default defineComponent({
       try {
         if (equipo.id) {
           await apiService.actualizarEquipo(equipo.id, equipo)
-          alert('✅ Cambios guardados exitosamente')
+          alert('Cambios guardados exitosamente')
           await this.cargarEquipos()
           this.modoEdicion = false
         }
       } catch (error) {
-        console.error('❌ Error guardando cambios:', error)
+        console.error('Error guardando cambios:', error)
         alert('Error al guardar cambios')
       }
     },
@@ -124,11 +124,12 @@ export default defineComponent({
     async eliminarEquipo(id: number) {
       if (confirm('¿Está seguro de eliminar este equipo?')) {
         try {
+    
           await apiService.eliminarEquipo(id)
-          alert('✅ Equipo eliminado')
+          alert('Equipo eliminado')
           await this.cargarEquipos()
         } catch (error) {
-          console.error('❌ Error eliminando equipo:', error)
+          console.error('Error eliminando equipo:', error)
           alert('Error al eliminar equipo')
         }
       }
