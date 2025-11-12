@@ -1,160 +1,38 @@
-<template>
-  <div class="consulta-wireframe">
-    <div class="titulo-pagina">CONSULTA</div>
-
-    <div class="barra-herramientas">
-      <button class="btn-herramienta" @click="aplicarFiltros">Filtrar</button>
-      <button class="btn-herramienta" @click="exportarDatos">Exportar</button>
-      <button class="btn-herramienta" @click="modoEdicion = !modoEdicion">
-        {{ modoEdicion ? 'Cancelar' : 'Editar' }}
-      </button>
-
-      <div class="tabs-consulta">
-        <div
-          v-for="cat in categorias"
-          :key="cat"
-          :class="['tab-consulta', categoriaActiva === cat ? 'activa' : '']"
-          @click="categoriaActiva = cat"
-        >
-          {{ cat }}
-        </div>
-      </div>
-    </div>
-
-    <!-- Contador de resultados -->
-    <div class="contador-resultados">
-      Mostrando {{ equiposFiltrados.length }} de {{ equipos.length }} equipos
-    </div>
-
-    <div class="tabla-consulta-container">
-      <table class="tabla-wireframe">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Usuario</th>
-            <th>Centro Trabajo</th>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>N/S</th>
-            <th v-if="mostrarCampo('ram')">RAM</th>
-            <th v-if="mostrarCampo('almacenamiento')">Almacenamiento</th>
-            <th v-if="mostrarCampo('procesador')">Procesador</th>
-            <th v-if="mostrarCampo('numeroCelular')">Núm. Celular</th>
-            <th v-if="mostrarCampo('dimension')">Dimensión</th>
-            <th v-if="mostrarCampo('puertosDisponibles')">Puertos</th>
-            <th v-if="mostrarCampo('tipoCamara')">Tipo Cámara</th>
-            <th v-if="mostrarCampo('direccionMacIp')">MAC/IP</th>
-            <th>Estado</th>
-            <th>Colaborador</th>
-            <th>Ubicación</th>
-            <th>Observaciones</th>
-            <th v-if="modoEdicion">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Datos REALES de la BD -->
-          <tr v-for="equipo in equiposFiltrados" :key="equipo.id">
-            <!-- Campos editables o estáticos -->
-            <td>
-              <span v-if="!modoEdicion">{{ equipo.codigo }}</span>
-              <input v-else v-model="equipo.codigo" class="input-edicion" />
-            </td>
-            <td>
-              <span v-if="!modoEdicion">{{ equipo.usuario }}</span>
-              <input v-else v-model="equipo.usuario" class="input-edicion" />
-            </td>
-            <td>{{ equipo.centroTrabajo }}</td>
-            <td>{{ equipo.marca }}</td>
-            <td>{{ equipo.modelo }}</td>
-            <td>{{ equipo.nSerie }}</td>
-
-            <!-- Campos específicos dinámicos -->
-            <td v-if="mostrarCampo('ram')">{{ equipo.ram }}</td>
-            <td v-if="mostrarCampo('almacenamiento')">{{ equipo.almacenamiento }}</td>
-            <td v-if="mostrarCampo('procesador')">{{ equipo.procesador }}</td>
-            <td v-if="mostrarCampo('numeroCelular')">{{ equipo.numeroCelular }}</td>
-            <td v-if="mostrarCampo('dimension')">{{ equipo.dimension }}</td>
-            <td v-if="mostrarCampo('puertosDisponibles')">{{ equipo.puertosDisponibles }}</td>
-            <td v-if="mostrarCampo('tipoCamara')">{{ equipo.tipoCamara }}</td>
-            <td v-if="mostrarCampo('direccionMacIp')">{{ equipo.direccionMacIp }}</td>
-
-            <td>
-              <span :class="`estado-${equipo.estado.toLowerCase()}`">
-                {{ equipo.estado }}
-              </span>
-            </td>
-            <td>{{ equipo.colaborador }}</td>
-            <td>{{ equipo.ubicacion }}</td>
-            <td>{{ equipo.observaciones }}</td>
-
-            <!-- Acciones en modo edición -->
-            <td v-if="modoEdicion">
-              <button @click="guardarCambios(equipo)" class="btn-guardar">💾</button>
-              <button @click="eliminarEquipo(equipo.id!)" class="btn-eliminar">🗑️</button>
-            </td>
-          </tr>
-
-          <!-- Mensaje si no hay datos -->
-          <tr v-if="equiposFiltrados.length === 0">
-            <td :colspan="modoEdicion ? 19 : 18" class="sin-datos">
-              📝 No hay equipos registrados en {{ categoriaActiva }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</template>
-
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { apiService } from '../services/api'
 import '../styles/consulta.css'
 
 interface Equipo {
   id?: number
-  codigo: string
+  categoria: string
   usuario: string
-  centroTrabajo: string
+  centro_trabajo: string
   marca: string
   modelo: string
-  nSerie: string
-  ram: string
-  almacenamiento: string
-  procesador: string
-  numeroCelular: string
-  dimension: string
-  puertosDisponibles: string
-  tipoCamara: string
-  direccionMacIp: string
-  estado: string
-  colaborador: string
-  ubicacion: string
-  observaciones: string
-  tipo: string
-  fechaRegistro: string
+  numero_serie: string
+  ram?: string
+  almacenamiento?: string
+  procesador?: string
+  estado?: string
+  colaborador?: string
+  ubicacion?: string
+  observaciones?: string
 }
 
 export default defineComponent({
   name: 'ConsultaEquipos',
   data() {
     return {
-      categoriaActiva: 'Cómputo',
-      categorias: [
-        'Cómputo',
-        'Teléfonos',
-        'Monitores',
-        'Cámaras',
-        'Tablets',
-        'Terminales',
-        'otros',
-      ],
+      categoriaActiva: 'laptop',
+      categorias: ['laptop', 'telefono', 'monitor', 'camara', 'tablet', 'terminal', 'otros'],
       equipos: [] as Equipo[],
       equiposFiltrados: [] as Equipo[],
       modoEdicion: false,
     }
   },
-  mounted() {
-    this.cargarEquipos()
+  async mounted() {
+    await this.cargarEquipos()
   },
   watch: {
     categoriaActiva() {
@@ -162,33 +40,54 @@ export default defineComponent({
     },
   },
   methods: {
-    cargarEquipos() {
-      const equiposGuardados = JSON.parse(localStorage.getItem('equipos') || '[]')
-      this.equipos = equiposGuardados
-      this.filtrarEquipos()
+    async cargarEquipos() {
+      try {
+        console.log('🔄 1. Iniciando carga de equipos...')
+
+        // Probar la API directamente
+        console.log('🔍 2. Llamando a apiService.getEquipos()...')
+        const equiposDesdeAPI = await apiService.getEquipos()
+
+        console.log('📊 3. Respuesta de la API:', equiposDesdeAPI)
+        console.log('🔢 4. Tipo de dato:', typeof equiposDesdeAPI)
+        console.log('📏 5. Cantidad de equipos:', equiposDesdeAPI?.length || 0)
+
+        this.equipos = equiposDesdeAPI || []
+        console.log('✅ 6. Equipos asignados a this.equipos:', this.equipos)
+
+        this.filtrarEquipos()
+      } catch (error) {
+        console.error('❌ ERROR en cargarEquipos:', error)
+        alert('Error al cargar equipos desde el servidor: ' + (error as Error).message)
+      }
     },
 
     filtrarEquipos() {
+      console.log('🔍 Filtrando equipos...')
+      console.log('📋 Equipos totales:', this.equipos)
+      console.log('🎯 Categoría activa:', this.categoriaActiva)
+
       if (this.categoriaActiva === 'todos') {
         this.equiposFiltrados = this.equipos
       } else {
         this.equiposFiltrados = this.equipos.filter(
-          (equipo) => equipo.tipo === this.categoriaActiva,
+          (equipo) => equipo.categoria === this.categoriaActiva,
         )
       }
+
+      console.log('📊 Equipos filtrados:', this.equiposFiltrados)
     },
 
     mostrarCampo(campo: string): boolean {
       const camposPorTipo: { [key: string]: string[] } = {
-        Cómputo: ['ram', 'almacenamiento', 'procesador'],
-        Teléfonos: ['numeroCelular'],
-        Monitores: ['dimension', 'puertosDisponibles'],
-        Cámaras: ['tipoCamara', 'direccionMacIp'],
-        Tablets: [],
-        Terminales: [],
+        laptop: ['ram', 'almacenamiento', 'procesador'],
+        telefono: [],
+        monitor: [],
+        camara: [],
+        tablet: ['ram', 'almacenamiento', 'procesador'],
+        terminal: [],
         otros: [],
       }
-
       return camposPorTipo[this.categoriaActiva]?.includes(campo) || false
     },
 
@@ -208,22 +107,30 @@ export default defineComponent({
       alert(`Datos exportados: ${datosExportar.length} equipos`)
     },
 
-    guardarCambios(equipo: Equipo) {
-      const index = this.equipos.findIndex((e) => e.id === equipo.id)
-      if (index !== -1) {
-        this.equipos[index] = { ...equipo }
-        localStorage.setItem('equipos', JSON.stringify(this.equipos))
-        alert('✅ Cambios guardados exitosamente')
-        this.modoEdicion = false
+    async guardarCambios(equipo: Equipo) {
+      try {
+        if (equipo.id) {
+          await apiService.actualizarEquipo(equipo.id, equipo)
+          alert('✅ Cambios guardados exitosamente')
+          await this.cargarEquipos()
+          this.modoEdicion = false
+        }
+      } catch (error) {
+        console.error('❌ Error guardando cambios:', error)
+        alert('Error al guardar cambios')
       }
     },
 
-    eliminarEquipo(id: number) {
+    async eliminarEquipo(id: number) {
       if (confirm('¿Está seguro de eliminar este equipo?')) {
-        this.equipos = this.equipos.filter((equipo) => equipo.id !== id)
-        localStorage.setItem('equipos', JSON.stringify(this.equipos))
-        this.filtrarEquipos()
-        alert('✅ Equipo eliminado')
+        try {
+          await apiService.eliminarEquipo(id)
+          alert('✅ Equipo eliminado')
+          await this.cargarEquipos()
+        } catch (error) {
+          console.error('❌ Error eliminando equipo:', error)
+          alert('Error al eliminar equipo')
+        }
       }
     },
   },

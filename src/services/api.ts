@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost/inventario-soporte-api'
+const API_BASE_URL = 'http://localhost:3000'
 
 export interface EquipoData {
   categoria: string
@@ -20,8 +20,8 @@ export const apiService = {
   async getEquipos(categoria?: string) {
     try {
       const url = categoria
-        ? `${API_BASE_URL}/api.php?categoria=${encodeURIComponent(categoria)}`
-        : `${API_BASE_URL}/api.php`
+        ? `${API_BASE_URL}/api/equipos?categoria=${encodeURIComponent(categoria)}`
+        : `${API_BASE_URL}/api/equipos`
 
       console.log('🔍 Fetching URL:', url)
 
@@ -29,12 +29,7 @@ export const apiService = {
       const data = await response.json()
 
       console.log('📨 API Response:', data)
-
-      if (!data.success) {
-        throw new Error(data.error || 'Error al obtener equipos')
-      }
-
-      return data.data
+      return data
     } catch (error) {
       console.error('Error fetching equipos:', error)
       throw error
@@ -45,7 +40,7 @@ export const apiService = {
     try {
       console.log('Enviando equipo:', equipoData)
 
-      const response = await fetch(`${API_BASE_URL}/api.php`, {
+      const response = await fetch(`${API_BASE_URL}/api/equipos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,14 +50,37 @@ export const apiService = {
 
       const data = await response.json()
       console.log('Respuesta creación:', data)
-
-      if (!data.success) {
-        throw new Error(data.error || 'Error al crear equipo')
-      }
-
       return data
     } catch (error) {
       console.error('Error creating equipo:', error)
+      throw error
+    }
+  },
+
+  async actualizarEquipo(id: number, equipoData: Partial<EquipoData>) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/equipos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(equipoData),
+      })
+      return response.json()
+    } catch (error) {
+      console.error('Error updating equipo:', error)
+      throw error
+    }
+  },
+
+  async eliminarEquipo(id: number) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/equipos/${id}`, {
+        method: 'DELETE',
+      })
+      return response.json()
+    } catch (error) {
+      console.error('Error deleting equipo:', error)
       throw error
     }
   },
