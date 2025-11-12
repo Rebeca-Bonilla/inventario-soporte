@@ -17,7 +17,6 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'ImportacionView',
-  // 👇 QUITAR el import y components
 })
 </script>
 
