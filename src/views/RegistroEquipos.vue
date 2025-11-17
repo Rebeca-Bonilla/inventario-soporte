@@ -6,8 +6,8 @@
     </div>
 
     <!-- Mensajes de éxito/error -->
-    <div v-if="showSuccess" class="success-message">✅ {{ successMessage }}</div>
-    <div v-if="showError" class="error-message">❌ {{ errorMessage }}</div>
+    <div v-if="showSuccess" class="success-message">{{ successMessage }}</div>
+    <div v-if="showError" class="error-message">{{ errorMessage }}</div>
 
     <!-- Tabs para tipos de equipo -->
     <div class="tabs-container">
@@ -29,7 +29,7 @@
       <div class="registro-form">
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Usuario</label>
+            <label class="form-label">Centro de Trabajo</label>
             <input
               v-model="formData.usuario"
               type="text"
@@ -38,7 +38,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Código</label>
+            <label class="form-label">Marca</label>
             <input
               v-model="formData.codigo"
               type="text"
@@ -47,7 +47,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Complejo</label>
+            <label class="form-label">Modelo</label>
             <input
               v-model="formData.complejo"
               type="text"
@@ -56,7 +56,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Centro de Trabajo</label>
+            <label class="form-label">Número de Serie (N/S)</label>
             <input
               v-model="formData.centroTrabajo"
               type="text"
@@ -65,7 +65,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Marca</label>
+            <label class="form-label">Tipo</label>
             <input
               v-model="formData.marca"
               type="text"
@@ -74,11 +74,11 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Módulo</label>
+            <label class="form-label">RAM</label>
             <input v-model="formData.modulo" type="text" class="form-input" placeholder="Módulo" />
           </div>
           <div class="form-group">
-            <label class="form-label">N/S</label>
+            <label class="form-label">Almacenamiento</label>
             <input
               v-model="formData.numeroSerie"
               type="text"
@@ -96,7 +96,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">RAM</label>
+            <label class="form-label">Procesador</label>
             <input
               v-model="formData.ram"
               type="text"
@@ -105,7 +105,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Almacenamiento</label>
+            <label class="form-label">Colaborador</label>
             <input
               v-model="formData.almacenamiento"
               type="text"
@@ -114,7 +114,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Procesador</label>
+            <label class="form-label">Ubicación</label>
             <input
               v-model="formData.procesador"
               type="text"
@@ -131,17 +131,8 @@
               <option value="Inactivo">Inactivo</option>
             </select>
           </div>
-          <div class="form-group full-width">
-            <label class="form-label">Colaborador</label>
-            <input
-              v-model="formData.colaborador"
-              type="text"
-              class="form-input"
-              placeholder="Nombre del colaborador"
-            />
-          </div>
           <div class="form-group">
-            <label class="form-label">Ubicación</label>
+            <label class="form-label">Fecha de registro</label>
             <input
               v-model="formData.ubicacion"
               type="text"
@@ -171,7 +162,7 @@
     <!-- Modal de confirmación -->
     <div v-if="showModal" class="modal-overlay">
       <div class="modal-content">
-        <div class="modal-icon">⚠️</div>
+        <div class="modal-icon"></div>
         <h3 class="modal-title">{{ modalTitle }}</h3>
         <p class="modal-message">{{ modalMessage }}</p>
         <div class="modal-actions">
@@ -184,7 +175,7 @@
     <!-- Modal de éxito -->
     <div v-if="showSuccessModal" class="modal-overlay">
       <div class="modal-content">
-        <div class="modal-icon">✅</div>
+        <div class="modal-icon"></div>
         <h3 class="modal-title">¡Éxito!</h3>
         <p class="modal-message">{{ successMessage }}</p>
         <div class="modal-actions">

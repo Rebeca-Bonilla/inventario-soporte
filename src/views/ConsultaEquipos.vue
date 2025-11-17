@@ -42,30 +42,30 @@ export default defineComponent({
   methods: {
     async cargarEquipos() {
       try {
-        console.log('🔄 1. Iniciando carga de equipos...')
+        console.log(' 1. Iniciando carga de equipos...')
 
         // Probar la API directamente
         console.log('🔍 2. Llamando a apiService.getEquipos()...')
         const equiposDesdeAPI = await apiService.getEquipos()
 
-        console.log('📊 3. Respuesta de la API:', equiposDesdeAPI)
-        console.log('🔢 4. Tipo de dato:', typeof equiposDesdeAPI)
-        console.log('📏 5. Cantidad de equipos:', equiposDesdeAPI?.length || 0)
+        console.log(' 3. Respuesta de la API:', equiposDesdeAPI)
+        console.log(' 4. Tipo de dato:', typeof equiposDesdeAPI)
+        console.log(' 5. Cantidad de equipos:', equiposDesdeAPI?.length || 0)
 
         this.equipos = equiposDesdeAPI || []
-        console.log('✅ 6. Equipos asignados a this.equipos:', this.equipos)
+        console.log(' 6. Equipos asignados a this.equipos:', this.equipos)
 
         this.filtrarEquipos()
       } catch (error) {
-        console.error('❌ ERROR en cargarEquipos:', error)
+        console.error(' ERROR en cargarEquipos:', error)
         alert('Error al cargar equipos desde el servidor: ' + (error as Error).message)
       }
     },
 
     filtrarEquipos() {
-      console.log('🔍 Filtrando equipos...')
-      console.log('📋 Equipos totales:', this.equipos)
-      console.log('🎯 Categoría activa:', this.categoriaActiva)
+      console.log(' Filtrando equipos...')
+      console.log(' Equipos totales:', this.equipos)
+      console.log(' Categoría activa:', this.categoriaActiva)
 
       if (this.categoriaActiva === 'todos') {
         this.equiposFiltrados = this.equipos
@@ -75,7 +75,7 @@ export default defineComponent({
         )
       }
 
-      console.log('📊 Equipos filtrados:', this.equiposFiltrados)
+      console.log(' Equipos filtrados:', this.equiposFiltrados)
     },
 
     mostrarCampo(campo: string): boolean {
@@ -124,7 +124,6 @@ export default defineComponent({
     async eliminarEquipo(id: number) {
       if (confirm('¿Está seguro de eliminar este equipo?')) {
         try {
-    
           await apiService.eliminarEquipo(id)
           alert('Equipo eliminado')
           await this.cargarEquipos()
