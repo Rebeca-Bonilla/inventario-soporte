@@ -1,87 +1,39 @@
-const API_BASE_URL = 'http://localhost:3000'
+import axios from 'axios'
 
-export interface EquipoData {
-  categoria: string
-  usuario: string
-  centro_trabajo: string
-  marca: string
-  modelo: string
-  numero_serie: string
-  ram?: string
-  almacenamiento?: string
-  procesador?: string
-  estado?: string
-  colaborador?: string
-  ubicacion?: string
-  observaciones?: string
-}
-
-export const apiService = {
-  async getEquipos(categoria?: string) {
-    try {
-      const url = categoria
-        ? `${API_BASE_URL}/api/equipos?categoria=${encodeURIComponent(categoria)}`
-        : `${API_BASE_URL}/api/equipos`
-
-      console.log('🔍 Fetching URL:', url)
-
-      const response = await fetch(url)
-      const data = await response.json()
-
-      console.log('📨 API Response:', data)
-      return data
-    } catch (error) {
-      console.error('Error fetching equipos:', error)
-      throw error
-    }
+// Configuración base de axios
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
   },
+})
 
-  async crearEquipo(equipoData: EquipoData) {
-    try {
-      console.log('Enviando equipo:', equipoData)
-
-      const response = await fetch(`${API_BASE_URL}/api/equipos`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(equipoData),
-      })
-
-      const data = await response.json()
-      console.log('Respuesta creación:', data)
-      return data
-    } catch (error) {
-      console.error('Error creating equipo:', error)
-      throw error
+// Interceptor para agregar el token a las requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
     }
+    return config
   },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
 
-  async actualizarEquipo(id: number, equipoData: Partial<EquipoData>) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/equipos/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(equipoData),
-      })
-      return response.json()
-    } catch (error) {
-      console.error('Error updating equipo:', error)
-      throw error
+// Interceptor para manejar respuestas
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expirado o inválido
+      localStorage.removeItem('auth_token')
+      window.location.href = '/login'
     }
+    return Promise.reject(error)
   },
+)
 
-  async eliminarEquipo(id: number) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/equipos/${id}`, {
-        method: 'DELETE',
-      })
-      return response.json()
-    } catch (error) {
-      console.error('Error deleting equipo:', error)
-      throw error
-    }
-  },
-}
+export default api

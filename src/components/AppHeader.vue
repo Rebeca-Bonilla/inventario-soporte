@@ -1,106 +1,177 @@
 <template>
   <header class="app-header">
-    <div class="header-left">
-      <h1 class="logo" @click="goHome">Sistema Equipos</h1>
+    <!-- Parte superior con logo y usuario -->
+    <div class="header-top">
+      <div class="logo-section">
+        <h1 class="app-title">Sistema de Inventario</h1>
+      </div>
+
+      <div class="header-actions">
+        <!-- Botón de tema oscuro/claro -->
+        <button @click="toggleTheme" class="theme-toggle">
+          <span v-if="themeStore.isDark">🌙</span>
+          <span v-else>☀️</span>
+        </button>
+
+        <!-- Información del usuario -->
+        <div class="user-info" v-if="sessionStore.user">
+          <span class="user-name">{{ sessionStore.user.name }}</span>
+          <span class="user-role">{{ sessionStore.user.role }}</span>
+        </div>
+      </div>
     </div>
 
-    <nav class="header-nav">
-      <router-link to="/registro" class="nav-item">Registro</router-link>
-      <router-link to="/consulta" class="nav-item">Consulta</router-link>
-      <router-link to="/archivados" class="nav-item">Archivados</router-link>
-      <router-link to="/importacion" class="nav-item">Importación</router-link>
-      <router-link to="/reportes" class="nav-item">Reportes</router-link>
-      <router-link to="/historial" class="nav-item">Historial</router-link>
+    <!-- Menú de navegación horizontal -->
+    <nav class="main-nav">
+      <div class="nav-container">
+        <router-link to="/registro" class="nav-item"> Registro </router-link>
+        <router-link to="/consulta" class="nav-item"> Consulta </router-link>
+        <router-link v-if="sessionStore.isAdmin" to="/archivados" class="nav-item">
+          Archivados
+        </router-link>
+        <router-link to="/importacion" class="nav-item"> Importación </router-link>
+        <router-link to="/reportes" class="nav-item"> Reportes </router-link>
+        <router-link to="/historial" class="nav-item"> Historial </router-link>
+      </div>
     </nav>
   </header>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useSessionStore } from '@/stores/session'
+import { useThemeStore } from '@/stores/theme'
 
-const router = useRouter()
+const sessionStore = useSessionStore()
+const themeStore = useThemeStore()
 
-const goHome = () => {
-  router.push('/dashboard')
+const toggleTheme = () => {
+  themeStore.toggleTheme()
 }
 </script>
 
 <style scoped>
 .app-header {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.logo-section {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: #1e40af;
-  color: white;
-  padding: 0 40px;
-  height: 90px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  gap: 1rem;
 }
 
-.header-left .logo {
+.app-title {
+  color: var(--text-primary);
   margin: 0;
-  font-size: 1.8em; /* Tamaño normal pero visible */
-  font-weight: bold;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.3s;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
-.header-left .logo:hover {
-  opacity: 0.9;
-  transform: scale(1.03);
-}
-
-.header-nav {
+.header-actions {
   display: flex;
-  gap: 40px; /* ESPACIADO MANTENIDO */
-  flex: 1;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-toggle {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  margin: 0 40px;
+  width: 40px;
+  height: 40px;
+  transition: all 0.2s;
+  font-size: 1.2rem;
+}
+
+.theme-toggle:hover {
+  background: var(--button-secondary-hover);
+  transform: scale(1.05);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.user-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.user-role {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-transform: capitalize;
+}
+
+/* Menú de navegación horizontal */
+.main-nav {
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.nav-container {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .nav-item {
-  color: white;
+  padding: 1rem 2rem;
+  color: var(--text-secondary);
   text-decoration: none;
-  padding: 15px 25px; /* PADDIG MANTENIDO para espaciado */
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  font-size: 1.1em; /* Tamaño normal */
-  white-space: nowrap;
   font-weight: 500;
-  letter-spacing: 0.5px;
-  min-width: 100px;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .nav-item:hover {
-  background: #3b82f6;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
 }
 
 .nav-item.router-link-active {
-  background: #60a5fa;
-  color: white;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background-color: var(--bg-secondary);
 }
 
-/* Efecto sutil para item activo */
-.nav-item.router-link-active::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 30%;
-  width: 40%;
-  height: 2px;
-  background: white;
-  border-radius: 1px;
+/* Responsive */
+@media (max-width: 768px) {
+  .header-top {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .nav-container {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .nav-item {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
 }
 </style>

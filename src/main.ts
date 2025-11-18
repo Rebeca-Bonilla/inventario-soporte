@@ -1,17 +1,20 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { createPinia } from 'pinia'
+
+// Importar estilos globales
+import '@/styles/global.css'
+import '@/styles/colors.css'
+import '@/styles/buttons.css'
+import '@/styles/forms.css'
+import '@/styles/tables.css'
+import '@/styles/layout.css'
 
 const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-
-// Cargar tema inmediatamente después de crear pinia
-import { useThemeStore } from './stores/theme'
-const themeStore = useThemeStore()
-themeStore.loadTheme()
 
 app.mount('#app')

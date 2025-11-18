@@ -1,101 +1,84 @@
 <template>
-  <div class="dashboard-wireframe">
-    <!-- Columna izquierda (más ancha) -->
-    <div class="columna-izquierda">
-      <!-- Sección Equipos -->
-      <div class="seccion-equipos">
-        <div class="titulo-seccion">Resumen</div>
-        <table class="tabla-wireframe">
-          <tbody>
-            <tr>
-              <td>Equipos de cómputo</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td>Monitores</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td>Teclados</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td>Teléfonos</td>
-              <td>-</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Cambios recientes -->
-      <div class="seccion-equipos">
-        <div class="titulo-seccion">Cambios recientes</div>
-        <table class="tabla-wireframe compacta">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Cambio realizado</th>
-              <th>Usuario</th>
-              <th>Fecha</th>
-              <th>Hora</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="i in 12" :key="i">
-              <td>{{ i }}</td>
-              <td>-</td>
-              <td>-</td>
-              <td>D-M-A</td>
-              <td>00:00:00</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <div class="dashboard">
+    <div class="dashboard-header">
+      <h1>Dashboard</h1>
     </div>
 
-    <!-- Columna derecha (más angosta) -->
-    <div class="columna-derecha">
-      <!-- Antivirus -->
-      <div class="alerta-antivirus">
-        Próximos antivirus por expirar:
-        <div style="display: flex; gap: 15px; margin-top: 5px">
-          <strong>Próximos</strong>
-          <strong>meses</strong>
+    <div class="dashboard-content">
+      <!-- Resumen de equipos -->
+      <div class="summary-section">
+        <h2>Resumen</h2>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <h3>Equipos de cómputo</h3>
+            <span class="summary-value">-</span>
+          </div>
+          <div class="summary-card">
+            <h3>Monitores</h3>
+            <span class="summary-value">-</span>
+          </div>
+          <div class="summary-card">
+            <h3>Teclados</h3>
+            <span class="summary-value">-</span>
+          </div>
+          <div class="summary-card">
+            <h3>Teléfonos</h3>
+            <span class="summary-value">-</span>
+          </div>
         </div>
       </div>
 
-      <!-- Tabla antivirus -->
-      <div class="seccion-equipos">
-        <table class="tabla-wireframe compacta">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Equipo</th>
-              <th>Usuario</th>
-              <th>N/S</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="i in 4" :key="i">
-              <td>-</td>
-              <td>-</td>
-              <td>-</td>
-              <td>-</td>
-              <td>-</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Cambios recientes -->
+      <div class="recent-changes">
+        <h2>Cambios recientes</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Cambio realizado</th>
+                <th>Usuario</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="i in 12" :key="i">
+                <td>{{ i }}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>D-M-A</td>
+                <td>00:00:00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <!-- Navegación rápida -->
-      <div class="resumen-wireframe">
-        <div class="titulo-seccion">Reusura</div>
-        <div class="lista-categorias">
-          <div>Archivados</div>
-          <div>Importación</div>
-          <div>Reportes</div>
-          <div>Historial</div>
+      <!-- Próximos antivirus por expirar -->
+      <div class="antivirus-section">
+        <h2>Próximos antivirus por expirar:</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Equipo</th>
+                <th>Usuario</th>
+                <th>N/S</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="i in 4" :key="i">
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -103,102 +86,95 @@
 </template>
 
 <script setup lang="ts">
-// Lógica simple
+// Lógica del dashboard aquí
 </script>
 
 <style scoped>
-.dashboard-wireframe {
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+  color: var(--text-primary);
+  font-size: 2rem;
+  margin: 0;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.summary-section h2,
+.recent-changes h2,
+.antivirus-section h2 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.summary-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  padding: 20px;
-  height: calc(100vh - 120px);
-  margin-left: 280px; /* Para el sidebar */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
 }
 
-.columna-izquierda {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.summary-card {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  text-align: center;
 }
 
-.columna-derecha {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.summary-card h3 {
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
 }
 
-.seccion-equipos {
-  background: white;
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.titulo-seccion {
+.summary-value {
+  color: var(--text-primary);
+  font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 14px;
-  color: #1e40af;
 }
 
-.tabla-wireframe {
+.table-container {
+  background: var(--card-bg);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
-  margin-bottom: 15px;
 }
 
-.tabla-wireframe th,
-.tabla-wireframe td {
-  border: 1px solid #999;
-  padding: 4px 6px;
+.data-table th,
+.data-table td {
+  padding: 0.75rem 1rem;
   text-align: left;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.tabla-wireframe.compacta th,
-.tabla-wireframe.compacta td {
-  padding: 2px 4px;
-  font-size: 11px;
+.data-table th {
+  background-color: var(--table-header-bg);
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.tabla-wireframe th {
-  background: #f0f0f0;
-  font-weight: bold;
+.data-table td {
+  color: var(--text-secondary);
 }
 
-.lista-categorias {
-  font-size: 12px;
-}
-
-.lista-categorias div {
-  padding: 4px 0;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
-
-.lista-categorias div:hover {
-  background: #f5f5f5;
-}
-
-.lista-categorias div:last-child {
-  border-bottom: none;
-}
-
-.alerta-antivirus {
-  background: white;
-  padding: 10px;
-  border: 1px solid #ccc;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 4px;
-}
-
-.resumen-wireframe {
-  background: white;
-  padding: 10px;
-  border: 1px solid #ccc;
-  font-size: 12px;
-  border-radius: 4px;
+.data-table tbody tr:hover {
+  background-color: var(--bg-tertiary);
 }
 </style>

@@ -1,72 +1,63 @@
-import axios from 'axios'
-
-const API_BASE_URL = 'http://localhost:3000/api' // Cambia por tu backend
-
-export interface Equipo {
-  id?: number
-  codigo: string
-  usuario: string
-  centroTrabajo: string
-  marca: string
-  modelo: string
-  nSerie: string
-  ram: string
-  almacenamiento: string
-  procesador: string
-  numeroCelular: string
-  dimension: string
-  puertosDisponibles: string
-  tipoCamara: string
-  direccionMacIp: string
-  estado: string
-  colaborador: string
-  ubicacion: string
-  observaciones: string
-  tipo: string
-  fechaRegistro: string
-}
+import { api } from './api'
+import type { Equipo } from '../types/equipos'
 
 export const equiposService = {
-  // Guardar equipo en BD
-  async guardarEquipo(equipo: Equipo): Promise<Equipo> {
+  // Guardar en localStorage (guardado temporal)
+  saveToLocal(equipo: Equipo): void {
+    const localEquipos = this.getLocalEquipos()
+    localEquipos.push(equipo)
+    localStorage.setItem('temp_equipos', JSON.stringify(localEquipos))
+  },
+
+  // Obtener equipos guardados localmente
+  getLocalEquipos(): Equipo[] {
+    const stored = localStorage.getItem('temp_equipos')
+    return stored ? JSON.parse(stored) : []
+  },
+
+  // Limpiar equipos locales
+  clearLocalEquipos(): void {
+    localStorage.removeItem('temp_equipos')
+  },
+
+  // Guardar en BD
+  async saveToDatabase(equipo: Equipo): Promise<void> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/equipos`, equipo)
-      return response.data
+      await api.post('/equipos', equipo)
     } catch (error) {
-      console.error('Error guardando equipo:', error)
-      throw new Error('No se pudo guardar el equipo')
+      console.error('Error al guardar en la base de datos:', error)
+      throw new Error('Error al guardar en la base de datos')
     }
   },
 
-  // Obtener todos los equipos (para consulta)
-  async obtenerEquipos(): Promise<Equipo[]> {
+  // Archivar equipo (solo admin)
+  async archiveEquipo(id: string): Promise<void> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/equipos`)
+      await api.patch(`/equipos/${id}/archive`)
+    } catch (error) {
+      console.error('Error al archivar equipo:', error)
+      throw new Error('Error al archivar equipo')
+    }
+  },
+
+  // Obtener equipos de la BD
+  async getEquipos(): Promise<Equipo[]> {
+    try {
+      const response = await api.get('/equipos')
       return response.data
     } catch (error) {
-      console.error('Error obteniendo equipos:', error)
-      throw new Error('No se pudieron obtener los equipos')
+      console.error('Error al obtener equipos:', error)
+      throw new Error('Error al obtener equipos')
     }
   },
 
   // Actualizar equipo
-  async actualizarEquipo(id: number, equipo: Equipo): Promise<Equipo> {
+  async updateEquipo(id: string, equipo: Partial<Equipo>): Promise<void> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/equipos/${id}`, equipo)
-      return response.data
+      await api.put(`/equipos/${id}`, equipo)
     } catch (error) {
-      console.error('Error actualizando equipo:', error)
-      throw new Error('No se pudo actualizar el equipo')
-    }
-  },
-
-  // Eliminar equipo
-  async eliminarEquipo(id: number): Promise<void> {
-    try {
-      await axios.delete(`${API_BASE_URL}/equipos/${id}`)
-    } catch (error) {
-      console.error('Error eliminando equipo:', error)
-      throw new Error('No se pudo eliminar el equipo')
+      console.error('Error al actualizar equipo:', error)
+      throw new Error('Error al actualizar equipo')
     }
   },
 }

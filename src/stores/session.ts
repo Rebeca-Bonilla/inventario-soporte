@@ -1,40 +1,75 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-
-interface User {
-  username: string
-  role: string
-}
+import { ref, computed } from 'vue'
+import type { User } from '@/types/auth'
 
 export const useSessionStore = defineStore('session', () => {
-  const isAuthenticated = ref(true)
-  const user = ref<User>({ username: 'admin', role: 'Administrador' })
-  const lastActivity = ref(Date.now())
+  const user = ref<User | null>(null)
+  const lastActivity = ref<number>(Date.now())
+  const hasUnsavedChanges = ref<boolean>(false)
+  const timeout = ref<number>(30 * 60 * 1000) // 30 minutos
+  let inactivityTimer: number | null = null
 
-  const login = (username: string, password: string) => {
-    // Lógica de login
-    isAuthenticated.value = true
-    user.value = { username, role: 'admin' }
+  // INICIALIZAR con usuario nulo para forzar login
+  const isAuthenticated = computed(() => {
+    // Forzar falso inicialmente hasta que se haga login
+    return !!user.value
+  })
+
+  const isAdmin = computed(() => user.value?.role === 'admin')
+
+  const resetTimer = () => {
     lastActivity.value = Date.now()
-    return true
+  }
+
+  const checkInactivity = () => {
+    const currentTime = Date.now()
+    if (currentTime - lastActivity.value > timeout.value) {
+      logoutDueToInactivity()
+    }
+  }
+
+  const logoutDueToInactivity = () => {
+    console.log('Sesión expirada por inactividad')
+    logout()
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login?reason=inactivity'
+    }
+  }
+
+  const login = async (userData: User) => {
+    console.log('🔄 Iniciando sesión para usuario:', userData)
+    user.value = userData
+    resetTimer()
+
+    // Configurar verificación de inactividad
+    if (inactivityTimer) {
+      clearInterval(inactivityTimer)
+    }
+    inactivityTimer = window.setInterval(checkInactivity, 60000) // Verificar cada minuto
+
+    console.log('✅ Sesión iniciada correctamente')
   }
 
   const logout = () => {
-    isAuthenticated.value = false
-    user.value = { username: '', role: '' }
-    lastActivity.value = 0
-  }
+    console.log('🔄 Cerrando sesión')
+    user.value = null
+    hasUnsavedChanges.value = false
 
-  const updateActivity = () => {
-    lastActivity.value = Date.now()
+    if (inactivityTimer) {
+      clearInterval(inactivityTimer)
+      inactivityTimer = null
+    }
+
+    console.log('✅ Sesión cerrada correctamente')
   }
 
   return {
-    isAuthenticated,
     user,
-    lastActivity,
+    isAuthenticated,
+    isAdmin,
+    hasUnsavedChanges,
+    resetTimer,
     login,
     logout,
-    updateActivity,
   }
 })

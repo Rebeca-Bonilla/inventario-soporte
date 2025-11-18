@@ -1,34 +1,38 @@
 <template>
-  <div
-    class="main-layout"
-    :class="{ 'dark-mode': themeStore.isDarkMode, 'light-mode': !themeStore.isDarkMode }"
-  >
-    <AppHeader />
+  <div class="main-layout">
     <AppSidebar />
-    <main class="main-content">
-      <router-view />
-    </main>
+    <div class="main-content">
+      <AppHeader />
+      <main class="content-area">
+        <router-view />
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useThemeStore } from '@/stores/theme'
 import AppHeader from '@/components/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
-
-const themeStore = useThemeStore()
 </script>
 
 <style scoped>
 .main-layout {
+  display: flex;
   min-height: 100vh;
-  transition: all 0.3s ease;
+  background-color: var(--bg-primary);
 }
 
 .main-content {
-  margin-left: 300px;
-  min-height: calc(100vh - 80px);
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.content-area {
+  flex: 1;
+  padding: 2rem;
+  background-color: var(--bg-secondary);
+  overflow-y: auto;
 }
 </style>

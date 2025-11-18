@@ -1,401 +1,320 @@
 <template>
-  <aside class="sidebar" :class="{ 'sidebar-dark': isDarkMode, 'sidebar-light': !isDarkMode }">
-    <!-- Header del Sidebar -->
-    <div class="sidebar-header">
-      <div class="usuario-info">
-        <div class="avatar">{{ userInitial }}</div>
+  <aside class="sidebar">
+    <div class="sidebar-content">
+      <!-- Timer de sesión -->
+      <div class="session-timer-section">
+        <div class="timer-header">
+          <span class="timer-icon">⏰</span>
+          <span>Tiempo restante:</span>
+        </div>
+        <div class="timer-display">
+          {{ formattedTime }}
+        </div>
+        <div class="timer-progress">
+          <div class="timer-progress-bar" :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+      </div>
+
+      <!-- Botones de acción rápida -->
+      <div class="sidebar-actions">
+        <button @click="goHome" class="action-btn">
+          <span class="action-icon">🏠</span>
+          <span>Home</span>
+        </button>
+
+        <button @click="goBack" class="action-btn" :disabled="!canGoBack">
+          <span class="action-icon">⬅️</span>
+          <span>Regresar</span>
+        </button>
+
+        <button @click="handleLogout" class="action-btn logout">
+          <span class="action-icon">🚪</span>
+          <span>Salir</span>
+        </button>
+      </div>
+
+      <!-- Información del usuario -->
+      <div class="user-section">
+        <div class="user-avatar">
+          {{ userInitials }}
+        </div>
         <div class="user-details">
-          <div class="nombre">{{ user?.username || 'admin' }}</div>
-          <div class="rol">{{ user?.role || 'Administrador' }}</div>
+          <h3 class="user-name">{{ sessionStore.user?.name }}</h3>
+          <p class="user-role">{{ sessionStore.user?.role }}</p>
         </div>
-      </div>
-
-      <!-- Switch Modo Oscuro/Claro -->
-      <div class="theme-switch">
-        <label class="switch">
-          <input type="checkbox" v-model="isDarkMode" @change="toggleTheme" />
-          <span class="slider"></span>
-        </label>
-        <span class="theme-label">{{ isDarkMode ? '🌙 Oscuro' : '☀️ Claro' }}</span>
-      </div>
-    </div>
-
-    <!-- Timer -->
-    <SessionTimer />
-
-    <!-- Navegación Principal -->
-    <nav class="navegacion-principal">
-      <div class="nav-section">
-        <h3 class="section-title">Navegación</h3>
-        <div class="nav-item" @click="goHome">
-          <span class="nav-icon">🏠</span>
-          <span class="nav-text">Home</span>
-        </div>
-        <div class="nav-item" @click="goBack">
-          <span class="nav-icon">↩️</span>
-          <span class="nav-text">Atrás</span>
-        </div>
-        <div class="nav-item" @click="logout">
-          <span class="nav-icon">🚪</span>
-          <span class="nav-text">Salir</span>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Información del Sistema -->
-    <div class="info-section">
-      <h3 class="section-title">Información del Sistema</h3>
-      <div class="info-grid">
-        <div class="info-card">
-          <div class="info-icon">💻</div>
-          <div class="info-content">
-            <div class="info-value">45</div>
-            <div class="info-label">Equipos Activos</div>
-          </div>
-        </div>
-        <div class="info-card">
-          <div class="info-icon">👥</div>
-          <div class="info-content">
-            <div class="info-value">23</div>
-            <div class="info-label">Usuarios</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Acciones Rápidas -->
-    <div class="acciones-section">
-      <h3 class="section-title">Acciones Rápidas</h3>
-      <div class="acciones-grid">
-        <button class="accion-btn" @click="nuevoEquipo">
-          <span class="accion-icon">➕</span>
-          <span>Nuevo Equipo</span>
-        </button>
-        <button class="accion-btn" @click="generarReporte">
-          <span class="accion-icon">📊</span>
-          <span>Generar Reporte</span>
-        </button>
-        <button class="accion-btn" @click="busquedaAvanzada">
-          <span class="accion-icon">🔍</span>
-          <span>Búsqueda Avanzada</span>
-        </button>
       </div>
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
-import SessionTimer from '@/components/SessionTimer.vue'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
-const user = computed(() => sessionStore.user)
-const isDarkMode = ref(true) // Por defecto modo oscuro
 
-const userInitial = computed(() => {
-  return user.value?.username?.charAt(0).toUpperCase() || 'A'
+// Timer functionality
+const timeLeft = ref(30 * 60) // 30 minutos en segundos
+
+const formattedTime = computed(() => {
+  const minutes = Math.floor(timeLeft.value / 60)
+  const seconds = timeLeft.value % 60
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 })
 
-// Cambiar tema
-const toggleTheme = () => {
-  const html = document.documentElement
-  if (isDarkMode.value) {
-    html.classList.add('dark')
-    html.classList.remove('light')
-    localStorage.setItem('theme', 'dark')
-  } else {
-    html.classList.add('light')
-    html.classList.remove('dark')
-    localStorage.setItem('theme', 'light')
+const progressPercentage = computed(() => {
+  return (timeLeft.value / (30 * 60)) * 100
+})
+
+let interval: number
+
+onMounted(() => {
+  interval = window.setInterval(() => {
+    if (timeLeft.value > 0) {
+      timeLeft.value--
+    } else {
+      sessionStore.logout()
+      router.push('/login')
+    }
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (interval) {
+    clearInterval(interval)
   }
+})
+
+// User info
+const userInitials = computed(() => {
+  const name = sessionStore.user?.name || 'US'
+  return name
+    .split(' ')
+    .map((word) => word.charAt(0))
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+})
+
+// Navigation
+const canGoBack = computed(() => {
+  return window.history.length > 1
+})
+
+const goBack = () => {
+  if (sessionStore.hasUnsavedChanges) {
+    const confirmLeave = window.confirm(
+      'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?',
+    )
+    if (!confirmLeave) return
+  }
+  router.back()
 }
 
-// Cargar tema guardado
-onMounted(() => {
-  const savedTheme = localStorage.getItem('theme') || 'dark'
-  isDarkMode.value = savedTheme === 'dark'
-  toggleTheme() // Aplicar tema al cargar
-})
+const goHome = () => {
+  if (sessionStore.hasUnsavedChanges) {
+    const confirmLeave = window.confirm(
+      'Tienes cambios sin guardar. ¿Estás seguro de que quieres ir al inicio?',
+    )
+    if (!confirmLeave) return
+  }
+  router.push('/dashboard')
+}
 
-// Navegación
-const goHome = () => router.push('/dashboard')
-const goBack = () => router.back()
-const logout = () => {
+const handleLogout = () => {
+  if (sessionStore.hasUnsavedChanges) {
+    const confirmLeave = window.confirm(
+      'Tienes cambios sin guardar. ¿Estás seguro de que quieres cerrar sesión?',
+    )
+    if (!confirmLeave) return
+  }
   sessionStore.logout()
   router.push('/login')
 }
-const nuevoEquipo = () => router.push('/registro')
-const generarReporte = () => router.push('/reportes')
-const busquedaAvanzada = () => console.log('Búsqueda avanzada')
 </script>
 
 <style scoped>
 .sidebar {
-  width: 300px;
-  height: 100vh;
-  padding: 20px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  overflow-y: auto;
-  transition: all 0.3s ease;
-}
-
-/* Modo Oscuro */
-.sidebar-dark {
-  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  color: white;
-  border-right: 1px solid #374151;
-}
-
-/* Modo Claro */
-.sidebar-light {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  color: #1f2937;
-  border-right: 1px solid #cbd5e1;
-}
-
-/* Header */
-.sidebar-header {
+  width: 280px;
+  background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--bg-tertiary) 100%);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-bottom: 20px;
+  box-shadow: var(--shadow-md);
 }
 
-.usuario-info {
+.sidebar-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 2rem;
+}
+
+/* Timer Section */
+.session-timer-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.timer-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.avatar {
+.timer-icon {
+  font-size: 1.1rem;
+}
+
+.timer-display {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+.timer-progress {
+  height: 8px;
+  background-color: var(--border-light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.timer-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success-color), var(--primary-color));
+  transition: width 1s linear;
+  border-radius: 4px;
+}
+
+/* Action Buttons */
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: var(--button-secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-btn.logout {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border-color: #ef4444;
+  margin-top: 1rem;
+}
+
+.action-btn.logout:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+}
+
+.action-icon {
+  font-size: 1.4rem;
+  width: 24px;
+  text-align: center;
+}
+
+/* User Section */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--card-bg);
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  margin-top: auto;
+}
+
+.user-avatar {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  border-radius: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 20px;
-  color: white;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .user-details {
   flex: 1;
 }
 
-.nombre {
-  font-weight: bold;
-  font-size: 16px;
-  margin-bottom: 2px;
-}
-
-.rol {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-/* Switch de Tema */
-.theme-switch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-}
-
-.sidebar-light .theme-switch {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #6b7280;
-  transition: 0.4s;
-  border-radius: 24px;
-}
-
-.slider:before {
-  position: absolute;
-  content: '';
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: #3b82f6;
-}
-
-input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-.theme-label {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Secciones */
-.section-title {
-  font-size: 14px;
+.user-name {
+  color: var(--text-primary);
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.7;
+  margin: 0 0 0.25rem 0;
 }
 
-.sidebar-light .section-title {
-  opacity: 0.6;
-}
-
-/* Navegación */
-.navegacion-principal {
-  margin-bottom: 25px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 5px;
-}
-
-.sidebar-dark .nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateX(5px);
-}
-
-.sidebar-light .nav-item:hover {
-  background: rgba(0, 0, 0, 0.05);
-  transform: translateX(5px);
-}
-
-.nav-icon {
-  font-size: 16px;
-  width: 20px;
-  text-align: center;
-}
-
-.nav-text {
+.user-role {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin: 0;
+  text-transform: capitalize;
   font-weight: 500;
 }
 
-/* Información del Sistema */
-.info-section {
-  margin-bottom: 25px;
+/* Efectos cuando queda poco tiempo */
+.timer-display:contains('05:') {
+  color: var(--warning-color) !important;
 }
 
-.info-grid {
-  display: grid;
-  gap: 10px;
+.timer-display:contains('02:') {
+  color: var(--error-color) !important;
+  animation: pulse 1s infinite;
 }
 
-.info-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 15px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-light .info-card {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.info-icon {
-  font-size: 20px;
-}
-
-.info-content {
-  flex: 1;
-}
-
-.info-value {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 2px;
-}
-
-.info-label {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-/* Acciones Rápidas */
-.acciones-grid {
-  display: grid;
-  gap: 8px;
-}
-
-.accion-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 15px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.sidebar-dark .accion-btn {
-  background: rgba(59, 130, 246, 0.2);
-  color: white;
-}
-
-.sidebar-dark .accion-btn:hover {
-  background: rgba(59, 130, 246, 0.4);
-  transform: translateY(-2px);
-}
-
-.sidebar-light .accion-btn {
-  background: rgba(59, 130, 246, 0.1);
-  color: #1e40af;
-}
-
-.sidebar-light .accion-btn:hover {
-  background: rgba(59, 130, 246, 0.2);
-  transform: translateY(-2px);
-}
-
-.accion-icon {
-  font-size: 16px;
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 </style>

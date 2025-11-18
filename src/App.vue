@@ -1,30 +1,17 @@
-<!-- src/App.vue -->
 <template>
-  <RouterView />
+  <router-view />
 </template>
 
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
 import { onMounted } from 'vue'
 import { useSessionStore } from '@/stores/session'
-import { useRouter } from 'vue-router'
 
 const sessionStore = useSessionStore()
-const router = useRouter()
 
 onMounted(() => {
-  // Inicializar la sesión y redirigir si no está autenticado
-  sessionStore.initializeAuth()
-
-  if (!sessionStore.isAuthenticated) {
-    console.log('🔐 No autenticado, redirigiendo a login...')
-    router.push('/login')
-  } else {
-    console.log('✅ Usuario autenticado:', sessionStore.userInfo())
-  }
+  console.log('🚀 App montada - Estado inicial:', {
+    isAuthenticated: sessionStore.isAuthenticated,
+    user: sessionStore.user,
+  })
 })
 </script>
-
-<style>
-@import '@/styles/global.css';
-</style>

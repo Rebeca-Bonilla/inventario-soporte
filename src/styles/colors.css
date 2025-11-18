@@ -1,18 +1,106 @@
 :root {
-  /* PALETA AZUL */
-  --azul-principal: #1e40af;
-  --azul-secundario: #3b82f6;
-  --azul-claro: #dbeafe;
-  --azul-hover: #2563eb;
+  /* Colores modo claro */
+  --primary-color: #3b82f6;
+  --secondary-color: #64748b;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
 
-  /* Colores existentes - mantener igual */
-  --bg-white: #ffffff;
-  --bg-light: #f8fafc;
-  --border-gray: #e2e8f0;
-  --text-dark: #1e293b;
-  --text-light: #64748b;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --info: #3b82f6;
+  /* Fondos */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+
+  /* Textos */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+
+  /* Bordes */
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
+
+  /* Componentes */
+  --header-bg: #ffffff;
+  --sidebar-bg: #f8fafc;
+  --card-bg: #ffffff;
+
+  /* Botones */
+  --button-bg: #3b82f6;
+  --button-text: #ffffff;
+  --button-hover: #2563eb;
+  --button-secondary-bg: #f1f5f9;
+  --button-secondary-text: #475569;
+  --button-secondary-hover: #e2e8f0;
+
+  /* Inputs */
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-text: #1e293b;
+  --input-placeholder: #9ca3af;
+
+  /* Tablas */
+  --table-header-bg: #f8fafc;
+  --table-row-even: #ffffff;
+  --table-row-odd: #f8fafc;
+  --table-border: #e2e8f0;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Modo oscuro */
+.dark {
+  /* Colores modo oscuro */
+  --primary-color: #60a5fa;
+  --secondary-color: #94a3b8;
+  --success-color: #34d399;
+  --warning-color: #fbbf24;
+  --error-color: #f87171;
+
+  /* Fondos */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+
+  /* Textos */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  /* Bordes */
+  --border-color: #334155;
+  --border-light: #475569;
+
+  /* Componentes */
+  --header-bg: #1e293b;
+  --sidebar-bg: #1e293b;
+  --card-bg: #1e293b;
+
+  /* Botones */
+  --button-bg: #3b82f6;
+  --button-text: #ffffff;
+  --button-hover: #2563eb;
+  --button-secondary-bg: #334155;
+  --button-secondary-text: #e2e8f0;
+  --button-secondary-hover: #475569;
+
+  /* Inputs */
+  --input-bg: #1e293b;
+  --input-border: #475569;
+  --input-text: #f1f5f9;
+  --input-placeholder: #64748b;
+
+  /* Tablas */
+  --table-header-bg: #1e293b;
+  --table-row-even: #1e293b;
+  --table-row-odd: #0f172a;
+  --table-border: #334155;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
