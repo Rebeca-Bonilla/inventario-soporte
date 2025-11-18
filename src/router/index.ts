@@ -7,13 +7,18 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { requiresAuth: false, noLayout: true }, // ← Añade esto
+      meta: { requiresAuth: false, noLayout: true },
     },
     {
       path: '/',
-      component: () => import('@/components/layout/MainLayout.vue'), // ← Layout para rutas autenticadas
+      component: () => import('@/components/layout/MainLayout.vue'),
       meta: { requiresAuth: true },
       children: [
+        // ¡MOVÍ LA REDIRECCIÓN AQUÍ!
+        {
+          path: '', // ← Esta es la ruta hija para '/'
+          redirect: '/dashboard',
+        },
         {
           path: '/dashboard',
           name: 'dashboard',
@@ -51,15 +56,15 @@ const router = createRouter({
         },
       ],
     },
-    // Redirección por defecto
-    {
-      path: '/',
-      redirect: '/dashboard',
-    },
+    // ELIMINA esta ruta duplicada ↓
+    // {
+    //   path: '/',
+    //   redirect: '/dashboard',
+    // },
   ],
 })
 
-// Guard de navegación
+// Guard de navegación (este está bien)
 router.beforeEach(async (to, from, next) => {
   const { useSessionStore } = await import('@/stores/session')
   const sessionStore = useSessionStore()

@@ -1,97 +1,135 @@
-/* src/styles/global.css */
-@import './colors.css';
-/* @import './components.css'; */ /* ⬅️ COMENTA O ELIMINA ESTA LÍNEA */
-
+/* Variables CSS para modo claro */
 :root {
-  /* Colores base */
-  --color-white: #ffffff;
-  --color-light-gray: #f5f7fa;
-  --color-dark-text: #2c3e50;
-
-  /* Colores primarios */
-  --color-primary: #a3d9d5;
-  --color-secondary: #b2a1cf;
-
-  /* Colores de acento */
-  --color-accent-pink: #e8b0c9;
-  --color-critical: #8a4f7d;
-  --color-success: #5d8a7f;
-
-  /* Colores secundarios */
-  --color-info: #89c2d9;
-  --color-warning: #ffe69c;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-sidebar: #f1f5f9;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --header-bg: #1e40af;
+  --header-text: #ffffff;
+  --card-bg: #ffffff;
+  --hover-bg: #f3f4f6;
 }
 
+/* Variables CSS para modo oscuro */
+.dark {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-sidebar: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: #374151;
+  --header-bg: #1e40af;
+  --header-text: #ffffff;
+  --card-bg: #1f2937;
+  --hover-bg: #374151;
+}
+
+/* Aplicar variables a toda la app */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 body {
-  background-color: var(--color-white);
-  color: var(--color-dark-text);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.tech-border {
-  border: 1px solid var(--color-secondary);
+/* Header global */
+.app-header {
+  background: var(--header-bg) !important;
+  color: var(--header-text) !important;
+}
+
+/* Main content */
+.main-content {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  margin-left: 300px; /* Ajustar según el ancho de tu sidebar */
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Cards y secciones */
+.seccion {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
-.tech-shadow {
-  box-shadow: 0 2px 10px rgba(178, 161, 207, 0.1);
+/* Tablas */
+.tabla {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
+.tabla th {
+  background: var(--header-bg);
+  color: var(--header-text);
+}
+
+.tabla td {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tabla tr:hover {
+  background: var(--hover-bg);
+}
+
+/* Inputs y formularios */
+input,
+select,
+textarea {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Botones */
 .btn-primary {
-  background-color: var(--color-success);
+  background: #3b82f6;
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background 0.3s;
 }
 
 .btn-primary:hover {
-  background-color: #4a7a6f;
+  background: #2563eb;
 }
 
 .btn-secondary {
-  background-color: var(--color-info);
-  color: white;
-  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
 }
 
 .btn-secondary:hover {
-  background-color: #78aecf;
-}
-
-.btn-danger {
-  background-color: var(--color-critical);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-danger:hover {
-  background-color: #79436d;
-}
-
-.input-error {
-  border-color: var(--color-critical) !important;
-}
-
-.error-text {
-  color: var(--color-critical);
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-  display: block;
+  background: var(--hover-bg);
 }
