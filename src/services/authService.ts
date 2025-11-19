@@ -1,34 +1,69 @@
-// src/services/authService.ts
-import type { LoginCredentials, User } from '@/types/auth'
-
-// Datos de usuarios de ejemplo (en producción esto vendría de una API)
-const mockUsers = [
-  { username: 'admin', password: 'admin123', role: 'Administrador' },
-  { username: 'usuario', password: 'user123', role: 'Usuario' },
-]
+import { LoginData, User } from '@/types/auth';
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<User | null> {
+  async login(credentials: LoginData) {
     // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const user = mockUsers.find(
-      (u) => u.username === credentials.username && u.password === credentials.password,
-    )
+    // Credenciales hardcodeadas
+    if (credentials.username === 'admin' && credentials.password === 'admin123') {
+      const user: User = {
+        id: 1,
+        username: 'admin',
+        name: 'Administrador',
+        email: 'admin@empresa.com',
+        role: 'admin'
+      };
 
-    if (user) {
+      localStorage.setItem('auth_token', 'fake-token-123');
+      localStorage.setItem('user_data', JSON.stringify(user));
+
       return {
-        username: user.username,
-        role: user.role,
-        loginTime: new Date().toLocaleTimeString(),
-      }
+        success: true,
+        user,
+        token: 'fake-token-123',
+        message: 'Login exitoso'
+      };
     }
 
-    return null
+    if (credentials.username === 'usuario' && credentials.password === 'usuario123') {
+      const user: User = {
+        id: 2,
+        username: 'usuario',
+        name: 'Usuario Prueba',
+        email: 'usuario@empresa.com',
+        role: 'user'
+      };
+
+      localStorage.setItem('auth_token', 'fake-token-456');
+      localStorage.setItem('user_data', JSON.stringify(user));
+
+      return {
+        success: true,
+        user,
+        token: 'fake-token-456',
+        message: 'Login exitoso'
+      };
+    }
+
+    return {
+      success: false,
+      error: 'Credenciales inválidas'
+    };
   },
 
-  async logout(): Promise<void> {
-    // Limpiar cualquier dato de sesión
-    await new Promise((resolve) => setTimeout(resolve, 500))
+  logout() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
   },
-}
+
+  getCurrentUser(): User | null {
+    const userData = localStorage.getItem('user_data');
+    return userData ? JSON.parse(userData) : null;
+  },
+
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.role === 'admin';
+  }
+};

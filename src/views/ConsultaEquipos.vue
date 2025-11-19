@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { apiService } from '../services/api'
+import { api } from '../services/api'
 import '../styles/consulta.css'
 
 interface Equipo {

@@ -1,75 +1,78 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import type { User } from '@/types/auth'
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import { authService } from '@/services/authService';
+
+interface User {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+interface LoginResult {
+  success: boolean;
+  user?: User;
+  token?: string;
+  error?: string;
+}
 
 export const useSessionStore = defineStore('session', () => {
-  const user = ref<User | null>(null)
-  const lastActivity = ref<number>(Date.now())
-  const hasUnsavedChanges = ref<boolean>(false)
-  const timeout = ref<number>(30 * 60 * 1000) // 30 minutos
-  let inactivityTimer: number | null = null
+  const user = ref<User | null>(null);
+  const isAuthenticated = ref(false);
+  const isLoading = ref(false);
+  const hasUnsavedChanges = ref(false); // ✅ Agregado
 
-  // INICIALIZAR con usuario nulo para forzar login
-  const isAuthenticated = computed(() => {
-    // Forzar falso inicialmente hasta que se haga login
-    return !!user.value
-  })
+  const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
+    isLoading.value = true;
 
-  const isAdmin = computed(() => user.value?.role === 'admin')
+    try {
+      const result = await authService.login(credentials);
 
-  const resetTimer = () => {
-    lastActivity.value = Date.now()
-  }
-
-  const checkInactivity = () => {
-    const currentTime = Date.now()
-    if (currentTime - lastActivity.value > timeout.value) {
-      logoutDueToInactivity()
+      if (result.success && result.user && result.token) {
+        user.value = result.user;
+        isAuthenticated.value = true;
+        return { success: true, user: result.user, token: result.token };
+      } else {
+        return { success: false, error: result.error || 'Error en el login' };
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Error de conexión';
+      return { success: false, error: errorMessage };
+    } finally {
+      isLoading.value = false;
     }
-  }
-
-  const logoutDueToInactivity = () => {
-    console.log('Sesión expirada por inactividad')
-    logout()
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login?reason=inactivity'
-    }
-  }
-
-  const login = async (userData: User) => {
-    console.log('🔄 Iniciando sesión para usuario:', userData)
-    user.value = userData
-    resetTimer()
-
-    // Configurar verificación de inactividad
-    if (inactivityTimer) {
-      clearInterval(inactivityTimer)
-    }
-    inactivityTimer = window.setInterval(checkInactivity, 60000) // Verificar cada minuto
-
-    console.log('✅ Sesión iniciada correctamente')
-  }
+  };
 
   const logout = () => {
-    console.log('🔄 Cerrando sesión')
-    user.value = null
-    hasUnsavedChanges.value = false
+    user.value = null;
+    isAuthenticated.value = false;
+    hasUnsavedChanges.value = false; // ✅ Resetear cambios
+    authService.logout();
+  };
 
-    if (inactivityTimer) {
-      clearInterval(inactivityTimer)
-      inactivityTimer = null
-    }
+  const setUnsavedChanges = (value: boolean) => {
+    hasUnsavedChanges.value = value;
+  };
 
-    console.log('✅ Sesión cerrada correctamente')
-  }
+  const getCurrentUser = () => user.value;
+
+  const isAdmin = () => user.value?.role === 'admin';
 
   return {
     user,
     isAuthenticated,
-    isAdmin,
-    hasUnsavedChanges,
-    resetTimer,
+    isLoading,
+    hasUnsavedChanges, // ✅ Exportado
     login,
     logout,
-  }
-})
+    setUnsavedChanges, // ✅ Exportado
+    getCurrentUser,
+    isAdmin
+  };
+});

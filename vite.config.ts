@@ -9,4 +9,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    // Para que funcione en subruta si es necesario
+    assetsDir: 'assets',
+  },
+  // Importante: definir la base URL
+  base: './',
 })

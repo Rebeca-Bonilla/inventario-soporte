@@ -1,36 +1,67 @@
-// src/services/timerService.ts
-export class TimerService {
-  private timeoutId: number | null = null
-  private onTimeoutCallback: (() => void) | null = null
+import { authService } from './authService'
 
-  start(timeLimit: number, onTimeout: () => void) {
-    this.onTimeoutCallback = onTimeout
-    this.reset(timeLimit)
+class TimerService {
+  private timeLeft: number = 30 * 60
+  private timerId: number | null = null
+  private lastActivity: number = Date.now()
+
+  constructor() {
+    this.startTimer()
+    this.setupActivityListeners()
   }
 
-  reset(timeLimit: number) {
-    // Limpiar timeout anterior
-    if (this.timeoutId !== null) {
-      clearTimeout(this.timeoutId)
+  private setupActivityListeners() {
+    const events = ['click', 'keypress', 'mousemove', 'scroll', 'touchstart']
+    events.forEach((event) => {
+      document.addEventListener(event, () => this.resetTimer(), { passive: true })
+    })
+  }
+
+  startTimer() {
+    if (this.timerId) {
+      clearInterval(this.timerId)
     }
 
-    // Configurar nuevo timeout
-    this.timeoutId = window.setTimeout(() => {
-      if (this.onTimeoutCallback) {
-        this.onTimeoutCallback()
+    this.timerId = setInterval(() => {
+      const now = Date.now()
+      const inactiveTime = Math.floor((now - this.lastActivity) / 1000)
+      this.timeLeft = Math.max(0, 30 * 60 - inactiveTime)
+
+      if (this.timeLeft <= 0) {
+        this.logout()
       }
-    }, timeLimit)
+    }, 1000) as unknown as number
   }
 
-  stop() {
-    if (this.timeoutId !== null) {
-      clearTimeout(this.timeoutId)
-      this.timeoutId = null
+  resetTimer() {
+    this.lastActivity = Date.now()
+    this.timeLeft = 30 * 60
+  }
+
+  getTimeLeft(): number {
+    const now = Date.now()
+    const inactiveTime = Math.floor((now - this.lastActivity) / 1000)
+    return Math.max(0, 30 * 60 - inactiveTime)
+  }
+
+  logout() {
+    if (this.timerId) {
+      clearInterval(this.timerId)
+      this.timerId = null
     }
-    this.onTimeoutCallback = null
+    authService.logout()
+    window.location.href = '/login'
   }
 
-  isRunning(): boolean {
-    return this.timeoutId !== null
+  destroy() {
+    if (this.timerId) {
+      clearInterval(this.timerId)
+    }
+    const events = ['click', 'keypress', 'mousemove', 'scroll', 'touchstart']
+    events.forEach((event) => {
+      document.removeEventListener(event, () => this.resetTimer())
+    })
   }
 }
+
+export const timerService = new TimerService()

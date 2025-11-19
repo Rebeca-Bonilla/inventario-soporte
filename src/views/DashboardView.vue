@@ -1,180 +1,98 @@
 <template>
   <div class="dashboard">
-    <div class="dashboard-header">
-      <h1>Dashboard</h1>
+    <h1>Dashboard de Inventario</h1>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Equipos</h3>
+        <p class="stat-number">{{ stats.totalEquipos }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Equipos Activos</h3>
+        <p class="stat-number">{{ stats.equiposActivos }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Equipos Archivados</h3>
+        <p class="stat-number">{{ stats.equiposArchivados }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Tipos de Equipo</h3>
+        <p class="stat-number">{{ stats.totalTipos }}</p>
+      </div>
     </div>
 
-    <div class="dashboard-content">
-      <!-- Resumen de equipos -->
-      <div class="summary-section">
-        <h2>Resumen</h2>
-        <div class="summary-grid">
-          <div class="summary-card">
-            <h3>Equipos de cómputo</h3>
-            <span class="summary-value">-</span>
-          </div>
-          <div class="summary-card">
-            <h3>Monitores</h3>
-            <span class="summary-value">-</span>
-          </div>
-          <div class="summary-card">
-            <h3>Teclados</h3>
-            <span class="summary-value">-</span>
-          </div>
-          <div class="summary-card">
-            <h3>Teléfonos</h3>
-            <span class="summary-value">-</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cambios recientes -->
-      <div class="recent-changes">
-        <h2>Cambios recientes</h2>
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Cambio realizado</th>
-                <th>Usuario</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="i in 12" :key="i">
-                <td>{{ i }}</td>
-                <td>-</td>
-                <td>-</td>
-                <td>D-M-A</td>
-                <td>00:00:00</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Próximos antivirus por expirar -->
-      <div class="antivirus-section">
-        <h2>Próximos antivirus por expirar:</h2>
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Equipo</th>
-                <th>Usuario</th>
-                <th>N/S</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="i in 4" :key="i">
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div class="recent-activity">
+      <h3>Actividad Reciente</h3>
+      <ul>
+        <li v-for="activity in recentActivities" :key="activity.id">
+          {{ activity.description }} - {{ activity.timestamp }}
+        </li>
+      </ul>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Lógica del dashboard aquí
+import { ref, onMounted } from 'vue'
+import { equiposService } from '@/services/equiposService'
+
+const stats = ref({
+  totalEquipos: 0,
+  equiposActivos: 0,
+  equiposArchivados: 0,
+  totalTipos: 0,
+})
+
+const recentActivities = ref([])
+
+onMounted(async () => {
+  await loadDashboardData()
+})
+
+async function loadDashboardData() {
+  try {
+    const dashboardData = await equiposService.getDashboardStats()
+    stats.value = dashboardData.stats
+    recentActivities.value = dashboardData.recentActivities
+  } catch (error) {
+    console.error('Error cargando dashboard:', error)
+  }
+}
 </script>
 
 <style scoped>
 .dashboard {
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 20px;
 }
 
-.dashboard-header {
-  margin-bottom: 2rem;
-}
-
-.dashboard-header h1 {
-  color: var(--text-primary);
-  font-size: 2rem;
-  margin: 0;
-}
-
-.dashboard-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.summary-section h2,
-.recent-changes h2,
-.antivirus-section h2 {
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-}
-
-.summary-grid {
+.stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 20px;
+  margin: 30px 0;
 }
 
-.summary-card {
-  background: var(--card-bg);
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border-color);
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
-.summary-card h3 {
-  color: var(--text-secondary);
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-}
-
-.summary-value {
-  color: var(--text-primary);
-  font-size: 1.5rem;
+.stat-number {
+  font-size: 2rem;
   font-weight: bold;
+  color: #3498db;
 }
 
-.table-container {
-  background: var(--card-bg);
-  border-radius: 0.5rem;
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.data-table th {
-  background-color: var(--table-header-bg);
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.data-table td {
-  color: var(--text-secondary);
-}
-
-.data-table tbody tr:hover {
-  background-color: var(--bg-tertiary);
+.recent-activity {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>

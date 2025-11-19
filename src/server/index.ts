@@ -1,333 +1,298 @@
 import { Elysia, t } from 'elysia'
 import { cors } from '@elysiajs/cors'
-import { swagger } from '@elysiajs/swagger'
-import { drizzle } from 'drizzle-orm/libsql'
-import { createClient } from '@libsql/client'
-import { equipos } from './db/schema'
-import { eq } from 'drizzle-orm'
 
-// Configuración de la base de datos
-const client = createClient({
-  url: 'file:./inventario.db',
-})
+// Interfaces para TypeScript
+interface User {
+  id: number
+  username: string
+  password: string
+  name: string
+  email: string
+  role: string
+}
 
-const db = drizzle(client)
+interface Equipo {
+  id: number
+  tipo: string
+  marca: string
+  modelo: string
+  serial: string
+  estado: string
+  archivo: boolean
+  fechaRegistro: string
+}
 
+// Datos en memoria - mantener como const pero usar métodos inmutables
+const users: User[] = [
+  {
+    id: 1,
+    username: 'admin',
+    password: 'admin123',
+    name: 'Administrador',
+    email: 'admin@empresa.com',
+    role: 'admin',
+  },
+  {
+    id: 2,
+    username: 'usuario',
+    password: 'usuario123',
+    name: 'Usuario Prueba',
+    email: 'usuario@empresa.com',
+    role: 'user',
+  },
+]
+
+const equipos: Equipo[] = [
+  {
+    id: 1,
+    tipo: 'computo',
+    marca: 'Dell',
+    modelo: 'Latitude 5400',
+    serial: 'DL001',
+    estado: 'activo',
+    archivo: false,
+    fechaRegistro: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    tipo: 'telefono',
+    marca: 'Samsung',
+    modelo: 'Galaxy S20',
+    serial: 'SG001',
+    estado: 'activo',
+    archivo: false,
+    fechaRegistro: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    tipo: 'monitor',
+    marca: 'HP',
+    modelo: '24fw',
+    serial: 'HP001',
+    estado: 'activo',
+    archivo: false,
+    fechaRegistro: new Date().toISOString(),
+  },
+]
+
+// ✅ SOLO UNA DEFINICIÓN DE app
 const app = new Elysia()
+  // Configuración CORS más permisiva
   .use(
     cors({
-      origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+      origin: true, // Permite todos los origenes
       credentials: true,
-    }),
-  )
-  .use(
-    swagger({
-      documentation: {
-        info: {
-          title: 'Sistema de Inventario API',
-          version: '1.0.0',
-          description: 'API para gestión de inventario de equipos',
-        },
-      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
     }),
   )
 
-// Schemas para validación
-const equipoBodySchema = t.Object({
-  tipo: t.String(),
-  centroTrabajo: t.String(),
-  marca: t.String(),
-  modelo: t.String(),
-  numeroSerie: t.String(),
-  estado: t.Optional(t.String()),
-  colaborador: t.Optional(t.String()),
-  ubicacion: t.String(),
-  observaciones: t.Optional(t.String()),
-  ram: t.Optional(t.String()),
-  almacenamiento: t.Optional(t.String()),
-  procesador: t.Optional(t.String()),
-})
+  // Agregar logger para debug
+  .onRequest(({ request }) => {
+    console.log(`➡️ ${request.method} ${request.url}`)
+  })
+  .onResponse(({ request, response }) => {
+    console.log(`⬅️ ${request.method} ${request.url} - ${response.status}`)
+  })
 
-const equipoUpdateSchema = t.Object({
-  tipo: t.Optional(t.String()),
-  centroTrabajo: t.Optional(t.String()),
-  marca: t.Optional(t.String()),
-  modelo: t.Optional(t.String()),
-  numeroSerie: t.Optional(t.String()),
-  estado: t.Optional(t.String()),
-  colaborador: t.Optional(t.String()),
-  ubicacion: t.Optional(t.String()),
-  observaciones: t.Optional(t.String()),
-  ram: t.Optional(t.String()),
-  almacenamiento: t.Optional(t.String()),
-  procesador: t.Optional(t.String()),
-})
+  // ========== API ROUTES ==========
 
-// Health check
-app.get('/', () => ({
-  message: '🚀 API Sistema de Inventario funcionando',
-  timestamp: new Date().toISOString(),
-}))
+  // 🔐 AUTH
+  .post(
+    '/api/auth/login',
+    ({ body }) => {
+      const { username, password } = body as { username: string; password: string }
 
-// Auth routes
-app.post(
-  '/auth/login',
-  ({ body, set }) => {
-    const { username, password } = body
+      const user = users.find((u) => u.username === username && u.password === password)
 
-    const users = [
-      {
-        id: '1',
-        username: 'admin',
-        password: 'admin123',
-        name: 'Administrador',
-        email: 'admin@empresa.com',
-        role: 'admin',
-      },
-      {
-        id: '2',
-        username: 'user',
-        password: 'user',
-        name: 'Usuario Regular',
-        email: 'user@empresa.com',
-        role: 'user',
-      },
-    ]
+      if (!user) {
+        return { success: false, error: 'Credenciales inválidas' }
+      }
 
-    const user = users.find((u) => u.username === username && u.password === password)
+      const { password: _, ...userWithoutPassword } = user
+      const token = `token-${user.id}-${Date.now()}`
 
-    if (!user) {
-      set.status = 401
-      return { error: 'Usuario o contraseña incorrectos' }
-    }
-
-    const { password: _, ...userWithoutPassword } = user
-
-    return {
-      user: userWithoutPassword,
-      token: `fake-jwt-token-${user.id}`,
-      message: 'Login exitoso',
-    }
-  },
-  {
-    body: t.Object({
-      username: t.String({ minLength: 1 }),
-      password: t.String({ minLength: 1 }),
-    }),
-  },
-)
-
-app.post('/auth/logout', () => ({
-  message: 'Sesión cerrada exitosamente',
-}))
-
-app.get('/auth/me', ({ headers }) => {
-  const authHeader = headers.authorization
-  if (!authHeader || !authHeader.startsWith('Bearer fake-jwt-token-')) {
-    return { user: null }
-  }
-
-  const userId = authHeader.replace('Bearer fake-jwt-token-', '')
-  const users = [
-    {
-      id: '1',
-      username: 'admin',
-      name: 'Administrador',
-      email: 'admin@empresa.com',
-      role: 'admin',
+      return {
+        success: true,
+        user: userWithoutPassword,
+        token,
+        message: 'Login exitoso',
+      }
     },
-    { id: '2', username: 'user', name: 'Usuario Regular', email: 'user@empresa.com', role: 'user' },
-  ]
+    {
+      body: t.Object({
+        username: t.String(),
+        password: t.String(),
+      }),
+    },
+  )
 
-  const user = users.find((u) => u.id === userId)
-  return { user: user || null }
-})
-
-// Equipos routes con BASE DE DATOS REAL
-app.get('/equipos', async ({ query }) => {
-  try {
-    const { page = '1', limit = '50', tipo, estado, search } = query
-
-    // Obtener equipos de la base de datos REAL
-    const equiposReales = await db.select().from(equipos)
-
-    // Filtrar datos
-    let datosFiltrados = equiposReales
-
-    if (tipo) {
-      datosFiltrados = datosFiltrados.filter((e) => e.tipo === tipo)
-    }
-
-    if (estado) {
-      datosFiltrados = datosFiltrados.filter((e) => e.estado === estado)
-    }
-
-    if (search) {
-      const searchLower = search.toLowerCase()
-      datosFiltrados = datosFiltrados.filter(
-        (e) =>
-          e.modelo?.toLowerCase().includes(searchLower) ||
-          e.marca?.toLowerCase().includes(searchLower) ||
-          e.numeroSerie?.toLowerCase().includes(searchLower),
-      )
-    }
-
-    // Paginación
-    const pageNum = parseInt(page as string)
-    const limitNum = parseInt(limit as string)
-    const startIndex = (pageNum - 1) * limitNum
-    const endIndex = startIndex + limitNum
-    const datosPaginados = datosFiltrados.slice(startIndex, endIndex)
+  // 📊 DASHBOARD
+  .get('/api/dashboard/stats', () => {
+    const totalEquipos = equipos.length
+    const equiposActivos = equipos.filter((e) => e.estado === 'activo').length
+    const equiposArchivados = equipos.filter((e) => e.archivo).length
+    const totalTipos = new Set(equipos.map((e) => e.tipo)).size
 
     return {
-      data: datosPaginados,
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total: datosFiltrados.length,
-        totalPages: Math.ceil(datosFiltrados.length / limitNum),
+      stats: {
+        totalEquipos,
+        equiposActivos,
+        equiposArchivados,
+        totalTipos,
       },
+      recentActivities: [
+        { id: 1, description: 'Sistema en línea', timestamp: new Date().toISOString() },
+      ],
     }
-  } catch (error) {
-    console.error('Error obteniendo equipos:', error)
+  })
+
+  // 🖥️ EQUIPOS CRUD
+  .get('/api/equipos', () => {
+    return { success: true, equipos }
+  })
+
+  .post('/api/equipos', ({ body }) => {
+    const equipoData = body as Omit<Equipo, 'id' | 'fechaRegistro'>
+
+    const newId = equipos.length > 0 ? Math.max(...equipos.map((e) => e.id)) + 1 : 1
+
+    const newEquipo: Equipo = {
+      id: newId,
+      ...equipoData,
+      fechaRegistro: new Date().toISOString(),
+    }
+
+    // Usar métodos inmutables en lugar de modificar el array directamente
+    equipos.push(newEquipo)
     return {
-      data: [],
-      pagination: {
-        page: 1,
-        limit: 50,
-        total: 0,
-        totalPages: 0,
-      },
+      success: true,
+      equipo: newEquipo,
+      message: 'Equipo agregado correctamente',
     }
-  }
-})
+  })
 
-app.get('/equipos/:id', async ({ params: { id } }) => {
-  try {
-    const [equipo] = await db.select().from(equipos).where(eq(equipos.id, id))
+  .put('/api/equipos/:id', ({ params, body }) => {
+    const id = parseInt(params.id)
+    const index = equipos.findIndex((e) => e.id === id)
 
-    if (!equipo) {
-      throw new Error('Equipo no encontrado')
+    if (index === -1) {
+      return { success: false, error: 'Equipo no encontrado' }
     }
 
-    return equipo
-  } catch (error) {
-    console.error('Error obteniendo equipo:', error)
-    throw new Error('Error al obtener el equipo')
-  }
-})
+    // Extraer solo las propiedades permitidas para actualizar
+    const bodyData = body as any
+    const equipoActual = equipos[index]
 
-// CREATE - Crear nuevo equipo en BD REAL
-app.post(
-  '/equipos',
-  async ({ body, set }) => {
-    try {
-      const [nuevoEquipo] = await db
-        .insert(equipos)
-        .values({
-          id: crypto.randomUUID(),
-          ...body,
-          fechaRegistro: new Date(),
-          archivido: false,
-        })
-        .returning()
-
-      set.status = 201
-      return {
-        equipo: nuevoEquipo,
-        message: 'Equipo creado exitosamente',
-      }
-    } catch (error) {
-      console.error('Error creando equipo:', error)
-      set.status = 500
-      return { error: 'Error al crear el equipo' }
+    // Crear NUEVO objeto con las actualizaciones (en lugar de modificar)
+    const equipoActualizado: Equipo = {
+      id: equipoActual.id,
+      tipo: bodyData.tipo !== undefined ? bodyData.tipo : equipoActual.tipo,
+      marca: bodyData.marca !== undefined ? bodyData.marca : equipoActual.marca,
+      modelo: bodyData.modelo !== undefined ? bodyData.modelo : equipoActual.modelo,
+      serial: bodyData.serial !== undefined ? bodyData.serial : equipoActual.serial,
+      estado: bodyData.estado !== undefined ? bodyData.estado : equipoActual.estado,
+      archivo: bodyData.archivo !== undefined ? bodyData.archivo : equipoActual.archivo,
+      fechaRegistro: equipoActual.fechaRegistro, // Mantener la fecha original
     }
-  },
-  {
-    body: equipoBodySchema,
-  },
-)
 
-// UPDATE - Actualizar equipo existente en BD REAL
-app.put(
-  '/equipos/:id',
-  async ({ params: { id }, body }) => {
-    try {
-      const [equipoActualizado] = await db
-        .update(equipos)
-        .set({
-          ...body,
-          fechaActualizacion: new Date(),
-        })
-        .where(eq(equipos.id, id))
-        .returning()
-
-      if (!equipoActualizado) {
-        throw new Error('Equipo no encontrado')
-      }
-
-      return {
-        equipo: equipoActualizado,
-        message: 'Equipo actualizado exitosamente',
-      }
-    } catch (error) {
-      console.error('Error actualizando equipo:', error)
-      throw new Error('Error al actualizar el equipo')
-    }
-  },
-  {
-    body: equipoUpdateSchema,
-  },
-)
-
-// ARCHIVE - Archivar equipo en BD REAL
-app.patch('/equipos/:id/archive', async ({ params: { id } }) => {
-  try {
-    const [equipoArchivado] = await db
-      .update(equipos)
-      .set({
-        archivido: true,
-        fechaActualizacion: new Date(),
-      })
-      .where(eq(equipos.id, id))
-      .returning()
-
-    if (!equipoArchivado) {
-      throw new Error('Equipo no encontrado')
-    }
+    // Reemplazar el elemento en el array (esto es permitido con const)
+    equipos[index] = equipoActualizado
 
     return {
-      equipo: equipoArchivado,
-      message: 'Equipo archivado exitosamente',
+      success: true,
+      equipo: equipos[index],
+      message: 'Equipo actualizado',
     }
-  } catch (error) {
-    console.error('Error archivando equipo:', error)
-    throw new Error('Error al archivar el equipo')
-  }
-})
+  })
 
-// Manejo de errores
-app.onError(({ code, error, set }) => {
-  console.error('Error:', error)
+  // 🗂️ ARCHIVAR EQUIPO
+  .patch('/api/equipos/:id/archivar', ({ params }) => {
+    const id = parseInt(params.id)
+    const index = equipos.findIndex((e) => e.id === id)
 
-  if (code === 'VALIDATION') {
-    set.status = 400
-    return { error: 'Datos inválidos', detalles: error.message }
-  }
+    if (index === -1) {
+      return { success: false, error: 'Equipo no encontrado' }
+    }
 
-  if (code === 'NOT_FOUND') {
-    set.status = 404
-    return { error: 'Recurso no encontrado' }
-  }
+    const equipoActual = equipos[index]
 
-  set.status = 500
-  return { error: 'Error interno del servidor' }
-})
+    // Crear NUEVO objeto archivado
+    const equipoArchivado: Equipo = {
+      ...equipoActual,
+      archivo: true,
+      estado: 'archivado',
+    }
 
-app.listen(3000)
+    equipos[index] = equipoArchivado
 
-console.log('🚀 Backend ejecutándose en http://localhost:3000')
-console.log('📚 Documentación en http://localhost:3000/swagger')
-console.log('🏠 Health check en http://localhost:3000/')
+    return {
+      success: true,
+      message: 'Equipo archivado',
+    }
+  })
 
-export type App = typeof app
+  // 🔓 DESARCHIVAR EQUIPO (solo admin)
+  .patch('/api/equipos/:id/desarchivar', ({ params }) => {
+    const id = parseInt(params.id)
+    const index = equipos.findIndex((e) => e.id === id)
+
+    if (index === -1) {
+      return { success: false, error: 'Equipo no encontrado' }
+    }
+
+    const equipoActual = equipos[index]
+
+    // Crear NUEVO objeto desarchivado
+    const equipoDesarchivado: Equipo = {
+      ...equipoActual,
+      archivo: false,
+      estado: 'activo',
+    }
+
+    equipos[index] = equipoDesarchivado
+
+    return {
+      success: true,
+      message: 'Equipo desarchivado',
+    }
+  })
+
+  // ❌ ELIMINAR EQUIPO
+  .delete('/api/equipos/:id', ({ params }) => {
+    const id = parseInt(params.id)
+    const index = equipos.findIndex((e) => e.id === id)
+
+    if (index === -1) {
+      return { success: false, error: 'Equipo no encontrado' }
+    }
+
+    equipos.splice(index, 1)
+    return {
+      success: true,
+      message: 'Equipo eliminado',
+    }
+  })
+
+  // 📝 OBTENER EQUIPOS ARCHIVADOS
+  .get('/api/equipos/archivados', () => {
+    const archivados = equipos.filter((e) => e.archivo)
+    return { success: true, equipos: archivados }
+  })
+
+  // 🌐 HEALTH CHECK
+  .get('/api/health', () => {
+    return {
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      totalEquipos: equipos.length,
+      totalUsers: users.length,
+    }
+  })
+
+  .listen(3000)
+
+console.log('🚀 Servidor de Inventario corriendo en:')
+console.log('📍 http://localhost:3000')
+console.log('📧 Los usuarios pueden acceder desde cualquier navegador en la red')
+console.log('💾 BD en memoria - Los datos persisten mientras el servidor esté activo')

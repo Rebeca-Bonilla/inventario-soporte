@@ -1,63 +1,79 @@
-import { api } from './api'
-import type { Equipo } from '../types/equipos'
+import { Equipo } from '@/types/equipos';
+
+const equiposMock: Equipo[] = [
+  {
+    id: 1,
+    tipo: 'computo',
+    marca: 'Dell',
+    modelo: 'Latitude 5400',
+    serial: 'DL001',
+    estado: 'activo',
+    archivo: false,
+    fechaRegistro: new Date().toISOString()
+  },
+  {
+    id: 2,
+    tipo: 'telefono',
+    marca: 'Samsung',
+    modelo: 'Galaxy S20',
+    serial: 'SG001',
+    estado: 'activo',
+    archivo: false,
+    fechaRegistro: new Date().toISOString()
+  },
+  {
+    id: 3,
+    tipo: 'monitor',
+    marca: 'HP',
+    modelo: '24fw',
+    serial: 'HP001',
+    estado: 'activo',
+    archivo: false,
+    fechaRegistro: new Date().toISOString()
+  },
+];
 
 export const equiposService = {
-  // Guardar en localStorage (guardado temporal)
-  saveToLocal(equipo: Equipo): void {
-    const localEquipos = this.getLocalEquipos()
-    localEquipos.push(equipo)
-    localStorage.setItem('temp_equipos', JSON.stringify(localEquipos))
+  async getDashboardStats() {
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    return {
+      stats: {
+        totalEquipos: 15,
+        equiposActivos: 12,
+        equiposArchivados: 3,
+        totalTipos: 4
+      },
+      recentActivities: [
+        { id: 1, description: 'Nuevo equipo registrado', timestamp: new Date().toISOString() },
+        { id: 2, description: 'Usuario admin inició sesión', timestamp: new Date().toISOString() }
+      ]
+    };
   },
 
-  // Obtener equipos guardados localmente
-  getLocalEquipos(): Equipo[] {
-    const stored = localStorage.getItem('temp_equipos')
-    return stored ? JSON.parse(stored) : []
+  async getEquipos(): Promise<{ success: boolean; equipos: Equipo[] }> {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { success: true, equipos: equiposMock };
   },
 
-  // Limpiar equipos locales
-  clearLocalEquipos(): void {
-    localStorage.removeItem('temp_equipos')
+  async getArchivados(): Promise<{ success: boolean; equipos: Equipo[] }> {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const archivados = equiposMock.filter(e => e.archivo);
+    return { success: true, equipos: archivados };
   },
 
-  // Guardar en BD
-  async saveToDatabase(equipo: Equipo): Promise<void> {
-    try {
-      await api.post('/equipos', equipo)
-    } catch (error) {
-      console.error('Error al guardar en la base de datos:', error)
-      throw new Error('Error al guardar en la base de datos')
-    }
+  async addEquipo(equipo: Omit<Equipo, 'id' | 'fechaRegistro'>): Promise<{ success: boolean; message: string }> {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { success: true, message: 'Equipo agregado (simulado)' };
   },
 
-  // Archivar equipo (solo admin)
-  async archiveEquipo(id: string): Promise<void> {
-    try {
-      await api.patch(`/equipos/${id}/archive`)
-    } catch (error) {
-      console.error('Error al archivar equipo:', error)
-      throw new Error('Error al archivar equipo')
-    }
+  async updateEquipo(id: number, updates: Partial<Equipo>): Promise<{ success: boolean; message: string }> {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { success: true, message: 'Equipo actualizado (simulado)' };
   },
 
-  // Obtener equipos de la BD
-  async getEquipos(): Promise<Equipo[]> {
-    try {
-      const response = await api.get('/equipos')
-      return response.data
-    } catch (error) {
-      console.error('Error al obtener equipos:', error)
-      throw new Error('Error al obtener equipos')
-    }
-  },
-
-  // Actualizar equipo
-  async updateEquipo(id: string, equipo: Partial<Equipo>): Promise<void> {
-    try {
-      await api.put(`/equipos/${id}`, equipo)
-    } catch (error) {
-      console.error('Error al actualizar equipo:', error)
-      throw new Error('Error al actualizar equipo')
-    }
-  },
-}
+  async archivarEquipo(id: number): Promise<{ success: boolean; message: string }> {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { success: true, message: 'Equipo archivado (simulado)' };
+  }
+};
