@@ -9,7 +9,7 @@ const equiposMock: Equipo[] = [
     serial: 'DL001',
     estado: 'activo',
     archivo: false,
-    fechaRegistro: new Date().toISOString()
+    fechaRegistro: new Date().toISOString(),
   },
   {
     id: 2,
@@ -19,7 +19,7 @@ const equiposMock: Equipo[] = [
     serial: 'SG001',
     estado: 'activo',
     archivo: false,
-    fechaRegistro: new Date().toISOString()
+    fechaRegistro: new Date().toISOString(),
   },
   {
     id: 3,
@@ -29,9 +29,9 @@ const equiposMock: Equipo[] = [
     serial: 'HP001',
     estado: 'activo',
     archivo: false,
-    fechaRegistro: new Date().toISOString()
+    fechaRegistro: new Date().toISOString(),
   },
-];
+]
 
 export const equiposService = {
   async getDashboardStats() {
