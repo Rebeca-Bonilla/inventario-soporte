@@ -1,79 +1,92 @@
-import { Equipo } from '@/types/equipos';
+import api from './api'
 
-const equiposMock: Equipo[] = [
-  {
-    id: 1,
-    tipo: 'computo',
-    marca: 'Dell',
-    modelo: 'Latitude 5400',
-    serial: 'DL001',
-    estado: 'activo',
-    archivo: false,
-    fechaRegistro: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    tipo: 'telefono',
-    marca: 'Samsung',
-    modelo: 'Galaxy S20',
-    serial: 'SG001',
-    estado: 'activo',
-    archivo: false,
-    fechaRegistro: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    tipo: 'monitor',
-    marca: 'HP',
-    modelo: '24fw',
-    serial: 'HP001',
-    estado: 'activo',
-    archivo: false,
-    fechaRegistro: new Date().toISOString(),
-  },
-]
+export interface Equipo {
+  id?: number
+  tipo: string
+  etiqueta_inventario?: string
+  marca: string
+  modelo: string
+  numero_serie?: string
+  estado: string
+  en_uso: boolean
+  archivado: boolean
+  colaborador_id?: number
+  ubicacion: string
+  centro_trabajo_id?: number
+  observaciones?: string
+  fecha_registro?: string
+  colaborador_nombre?: string
+  centro_trabajo_nombre?: string
+}
+
+export interface FiltrosEquipos {
+  tipo?: string
+  estado?: string
+  archivado?: boolean
+  search?: string
+  page?: number
+  limit?: number
+}
 
 export const equiposService = {
+  // Obtener equipos con filtros
+  async getEquipos(filtros: FiltrosEquipos = {}) {
+    const params: Record<string, any> = {}
+
+    if (filtros.tipo) params.tipo = filtros.tipo
+    if (filtros.estado) params.estado = filtros.estado
+    if (filtros.archivado !== undefined) params.archivado = filtros.archivado
+    if (filtros.search) params.search = filtros.search
+    if (filtros.page) params.page = filtros.page
+    if (filtros.limit) params.limit = filtros.limit
+
+    return await api.get('/equipos', { params })
+  },
+
+  // Obtener solo equipos activos
+  async getEquiposActivos() {
+    return await api.get('/equipos/activos')
+  },
+
+  // Obtener solo equipos archivados
+  async getEquiposArchivados() {
+    return await api.get('/equipos/archivados')
+  },
+
+  // Obtener equipo por ID
+  async getEquipoById(id: number) {
+    return await api.get(`/equipos/${id}`)
+  },
+
+  // Crear nuevo equipo
+  async createEquipo(equipo: Equipo) {
+    return await api.post('/equipos', equipo)
+  },
+
+  // Actualizar equipo
+  async updateEquipo(id: number, equipo: Partial<Equipo>) {
+    return await api.put(`/equipos/${id}`, equipo)
+  },
+
+  // Archivar equipo
+  async archiveEquipo(id: number) {
+    return await api.put(`/equipos/${id}/archive`)
+  },
+
+  // Obtener estadísticas para dashboard
   async getDashboardStats() {
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    return {
-      stats: {
-        totalEquipos: 15,
-        equiposActivos: 12,
-        equiposArchivados: 3,
-        totalTipos: 4
-      },
-      recentActivities: [
-        { id: 1, description: 'Nuevo equipo registrado', timestamp: new Date().toISOString() },
-        { id: 2, description: 'Usuario admin inició sesión', timestamp: new Date().toISOString() }
-      ]
-    };
+    return await api.get('/equipos/stats/dashboard')
   },
 
-  async getEquipos(): Promise<{ success: boolean; equipos: Equipo[] }> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true, equipos: equiposMock };
+  // Tipos de equipo disponibles
+  async getTiposEquipo() {
+    const response = await this.getDashboardStats()
+    return response.data.tipos || []
   },
 
-  async getArchivados(): Promise<{ success: boolean; equipos: Equipo[] }> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const archivados = equiposMock.filter(e => e.archivo);
-    return { success: true, equipos: archivados };
+  // Estados disponibles
+  async getEstadosEquipo() {
+    const response = await this.getDashboardStats()
+    return response.data.estados || []
   },
-
-  async addEquipo(equipo: Omit<Equipo, 'id' | 'fechaRegistro'>): Promise<{ success: boolean; message: string }> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true, message: 'Equipo agregado (simulado)' };
-  },
-
-  async updateEquipo(id: number, updates: Partial<Equipo>): Promise<{ success: boolean; message: string }> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true, message: 'Equipo actualizado (simulado)' };
-  },
-
-  async archivarEquipo(id: number): Promise<{ success: boolean; message: string }> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true, message: 'Equipo archivado (simulado)' };
-  }
-};
+}
