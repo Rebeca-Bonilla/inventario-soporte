@@ -1,8 +1,10 @@
 import { query } from '../config/database'
-import { LoginRequest, AuthResponse, Usuario } from '../types'
+import { LoginRequest, Usuario, ApiResponse } from '../types'
 
 export class AuthController {
-  async login(data: LoginRequest): Promise<AuthResponse> {
+  async login(
+    data: LoginRequest,
+  ): Promise<ApiResponse<{ token: string; user: Omit<Usuario, 'password'> }>> {
     try {
       // Buscar usuario
       const usuarios = (await query(
@@ -19,7 +21,7 @@ export class AuthController {
 
       const usuario = usuarios[0]
 
-      // Verificar contraseña (simple por ahora)
+      // Verificar contraseña
       if (usuario.password !== data.password) {
         return {
           success: false,
@@ -27,7 +29,6 @@ export class AuthController {
         }
       }
 
-      // Verificar si está activo
       if (!usuario.activo) {
         return {
           success: false,
@@ -37,24 +38,26 @@ export class AuthController {
 
       // Crear sesión
       const sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-      await query(
-        `INSERT INTO sesiones (id, usuario_id, ip_address)
-                 VALUES (?, ?, ?)`,
-        [sessionId, usuario.id, 'localhost'],
-      )
+      await query(`INSERT INTO sesiones (id, usuario_id, ip_address) VALUES (?, ?, ?)`, [
+        sessionId,
+        usuario.id,
+        'localhost',
+      ])
 
-      // Crear token simple (en producción usar JWT)
+      // Crear token
       const token = Buffer.from(`${usuario.id}:${sessionId}`).toString('base64')
 
-      // Remover password de la respuesta
+      // Remover password
       const { password, ...userWithoutPassword } = usuario
 
       return {
         success: true,
-        token,
-        user: userWithoutPassword,
+        data: {
+          token,
+          user: userWithoutPassword,
+        },
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error en login:', error)
       return {
         success: false,
@@ -63,39 +66,15 @@ export class AuthController {
     }
   }
 
-  async logout(token: string): Promise<{ success: boolean; message?: string }> {
+  async verifyToken(token: string): Promise<ApiResponse<Usuario>> {
     try {
       // Decodificar token
       const decoded = Buffer.from(token, 'base64').toString('ascii')
       const [userId, sessionId] = decoded.split(':')
 
-      await query('UPDATE sesiones SET activa = 0 WHERE id = ? AND usuario_id = ?', [
-        sessionId,
-        userId,
-      ])
-
-      return {
-        success: true,
-        message: 'Sesión cerrada correctamente',
-      }
-    } catch (error) {
-      console.error('Error en logout:', error)
-      return {
-        success: false,
-        message: 'Error al cerrar sesión',
-      }
-    }
-  }
-
-  async verifyToken(token: string): Promise<AuthResponse> {
-    try {
-      // Decodificar token
-      const decoded = Buffer.from(token, 'base64').toString('ascii')
-      const [userId, sessionId] = decoded.split(':')
-
-      // Verificar sesión activa
+      // Verificar sesión
       const sesiones = (await query(
-        `SELECT s.*, u.username, u.nombre_completo, u.rol, u.activo
+        `SELECT u.id, u.username, u.nombre_completo, u.rol, u.activo
                  FROM sesiones s
                  JOIN usuarios u ON s.usuario_id = u.id
                  WHERE s.id = ? AND s.usuario_id = ? AND s.activa = 1
@@ -106,32 +85,47 @@ export class AuthController {
       if (sesiones.length === 0) {
         return {
           success: false,
-          error: 'Sesión expirada o inválida',
+          error: 'Sesión expirada',
         }
       }
 
-      const sesion = sesiones[0]
+      const usuario = sesiones[0]
 
-      // Actualizar última actividad
+      // Actualizar actividad
       await query('UPDATE sesiones SET ultima_actividad = NOW() WHERE id = ?', [sessionId])
-
-      const user: Usuario = {
-        id: sesion.usuario_id,
-        username: sesion.username,
-        nombre_completo: sesion.nombre_completo,
-        rol: sesion.rol,
-        activo: sesion.activo,
-      }
 
       return {
         success: true,
-        user,
+        data: usuario,
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error verificando token:', error)
       return {
         success: false,
         error: 'Token inválido',
+      }
+    }
+  }
+
+  async logout(token: string): Promise<ApiResponse> {
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('ascii')
+      const [userId, sessionId] = decoded.split(':')
+
+      await query('UPDATE sesiones SET activa = 0 WHERE id = ? AND usuario_id = ?', [
+        sessionId,
+        userId,
+      ])
+
+      return {
+        success: true,
+        message: 'Sesión cerrada',
+      }
+    } catch (error: any) {
+      console.error('Error en logout:', error)
+      return {
+        success: false,
+        error: 'Error al cerrar sesión',
       }
     }
   }

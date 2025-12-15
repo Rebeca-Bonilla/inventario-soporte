@@ -1,73 +1,55 @@
 import { query } from '../config/database'
-import { Equipo } from '../types'
+import { Equipo, ApiResponse } from '../types'
 
 export class EquiposController {
-  // Obtener equipos con filtros
   async getEquipos(filters?: {
     tipo?: string
     estado?: string
     archivado?: boolean
     search?: string
-    limit?: number
-    page?: number
-  }) {
+  }): Promise<Equipo[]> {
     let sql = `
             SELECT e.*,
                    c.nombre_completo as colaborador_nombre,
                    ct.nombre as centro_trabajo_nombre
-            FROM vista_equipos_activos e
+            FROM equipos e
+            LEFT JOIN colaboradores c ON e.colaborador_id = c.id
+            LEFT JOIN centros_trabajo ct ON e.centro_trabajo_id = ct.id
             WHERE 1=1
         `
+
     const params: any[] = []
 
-    if (filters) {
-      if (filters.tipo) {
-        sql += ' AND e.tipo = ?'
-        params.push(filters.tipo)
-      }
-      if (filters.estado) {
-        sql += ' AND e.estado = ?'
-        params.push(filters.estado)
-      }
-      if (filters.archivado !== undefined) {
-        sql = `
-                    SELECT e.*,
-                           c.nombre_completo as colaborador_nombre,
-                           ct.nombre as centro_trabajo_nombre
-                    FROM equipos e
-                    LEFT JOIN colaboradores c ON e.colaborador_id = c.id
-                    LEFT JOIN centros_trabajo ct ON e.centro_trabajo_id = ct.id
-                    WHERE e.archivado = ?
-                `
-        params.unshift(filters.archivado ? 1 : 0)
-      }
-      if (filters.search) {
-        sql +=
-          ' AND (e.etiqueta_inventario LIKE ? OR e.marca LIKE ? OR e.modelo LIKE ? OR e.numero_serie LIKE ?)'
-        const searchTerm = `%${filters.search}%`
-        params.push(searchTerm, searchTerm, searchTerm, searchTerm)
-      }
+    if (filters?.archivado !== undefined) {
+      sql += ' AND e.archivado = ?'
+      params.push(filters.archivado ? 1 : 0)
+    } else {
+      sql += ' AND e.archivado = 0' // Por defecto solo activos
+    }
+
+    if (filters?.tipo) {
+      sql += ' AND e.tipo = ?'
+      params.push(filters.tipo)
+    }
+
+    if (filters?.estado) {
+      sql += ' AND e.estado = ?'
+      params.push(filters.estado)
+    }
+
+    if (filters?.search) {
+      sql +=
+        ' AND (e.etiqueta_inventario LIKE ? OR e.marca LIKE ? OR e.modelo LIKE ? OR e.numero_serie LIKE ?)'
+      const searchTerm = `%${filters.search}%`
+      params.push(searchTerm, searchTerm, searchTerm, searchTerm)
     }
 
     sql += ' ORDER BY e.fecha_registro DESC'
 
-    // Paginación
-    if (filters?.limit) {
-      sql += ' LIMIT ?'
-      params.push(filters.limit)
-
-      if (filters?.page) {
-        const offset = (filters.page - 1) * filters.limit
-        sql += ' OFFSET ?'
-        params.push(offset)
-      }
-    }
-
-    return await query(sql, params)
+    return (await query(sql, params)) as Equipo[]
   }
 
-  // Obtener equipo por ID
-  async getEquipoById(id: number) {
+  async getEquipoById(id: number): Promise<Equipo | null> {
     const resultados = (await query(
       `SELECT e.*,
                     c.nombre_completo as colaborador_nombre,
@@ -77,149 +59,171 @@ export class EquiposController {
              LEFT JOIN centros_trabajo ct ON e.centro_trabajo_id = ct.id
              WHERE e.id = ?`,
       [id],
-    )) as any[]
+    )) as Equipo[]
 
     return resultados[0] || null
   }
 
-  // Crear nuevo equipo
-  async createEquipo(equipo: Equipo, usuarioId: number): Promise<number> {
-    const campos: string[] = []
-    const valores: any[] = []
-    const placeholders: string[] = []
+  async createEquipo(equipo: Equipo, usuarioId: number): Promise<ApiResponse<{ id: number }>> {
+    try {
+      const campos: string[] = []
+      const valores: any[] = []
+      const placeholders: string[] = []
 
-    // Campos obligatorios
-    const camposBase = ['tipo', 'marca', 'modelo', 'estado', 'ubicacion', 'creado_por']
+      // Campos obligatorios
+      const camposBase = ['tipo', 'marca', 'modelo', 'estado', 'ubicacion', 'creado_por']
 
-    camposBase.forEach((campo) => {
-      campos.push(campo)
-      placeholders.push('?')
-    })
-
-    valores.push(
-      equipo.tipo,
-      equipo.marca,
-      equipo.modelo,
-      equipo.estado || 'Activo',
-      equipo.ubicacion,
-      usuarioId,
-    )
-
-    // Campos opcionales
-    const camposOpcionales: Record<string, any> = {
-      etiqueta_inventario: equipo.etiqueta_inventario,
-      numero_serie: equipo.numero_serie,
-      colaborador_id: equipo.colaborador_id,
-      centro_trabajo_id: equipo.centro_trabajo_id,
-      en_uso: equipo.en_uso ? 1 : 0,
-      procesador: equipo.procesador,
-      ram_gb: equipo.ram_gb,
-      almacenamiento_gb: equipo.almacenamiento_gb,
-      tipo_almacenamiento: equipo.tipo_almacenamiento,
-      direccion_ip: equipo.direccion_ip,
-      observaciones: equipo.observaciones,
-    }
-
-    Object.entries(camposOpcionales).forEach(([campo, valor]) => {
-      if (valor !== undefined && valor !== null && valor !== '') {
+      camposBase.forEach((campo) => {
         campos.push(campo)
-        valores.push(valor)
+        placeholders.push('?')
+      })
+
+      valores.push(
+        equipo.tipo,
+        equipo.marca,
+        equipo.modelo,
+        equipo.estado || 'Activo',
+        equipo.ubicacion,
+        usuarioId,
+      )
+
+      // Campos opcionales
+      if (equipo.etiqueta_inventario) {
+        campos.push('etiqueta_inventario')
+        valores.push(equipo.etiqueta_inventario)
         placeholders.push('?')
       }
-    })
 
-    const sql = `INSERT INTO equipos (${campos.join(', ')}) VALUES (${placeholders.join(', ')})`
-    const result = (await query(sql, valores)) as any
-
-    return result.insertId
-  }
-
-  // Actualizar equipo
-  async updateEquipo(id: number, equipo: Partial<Equipo>): Promise<boolean> {
-    const updates: string[] = []
-    const valores: any[] = []
-
-    const camposPermitidos: Record<string, any> = {
-      marca: equipo.marca,
-      modelo: equipo.modelo,
-      estado: equipo.estado,
-      ubicacion: equipo.ubicacion,
-      colaborador_id: equipo.colaborador_id,
-      centro_trabajo_id: equipo.centro_trabajo_id,
-      en_uso: equipo.en_uso !== undefined ? (equipo.en_uso ? 1 : 0) : undefined,
-      procesador: equipo.procesador,
-      ram_gb: equipo.ram_gb,
-      observaciones: equipo.observaciones,
-      archivado: equipo.archivado !== undefined ? (equipo.archivado ? 1 : 0) : undefined,
-    }
-
-    Object.entries(camposPermitidos).forEach(([campo, valor]) => {
-      if (valor !== undefined && valor !== null) {
-        updates.push(`${campo} = ?`)
-        valores.push(valor)
+      if (equipo.numero_serie) {
+        campos.push('numero_serie')
+        valores.push(equipo.numero_serie)
+        placeholders.push('?')
       }
-    })
 
-    if (updates.length === 0) {
-      return false
+      if (equipo.colaborador_id) {
+        campos.push('colaborador_id')
+        valores.push(equipo.colaborador_id)
+        placeholders.push('?')
+      }
+
+      if (equipo.centro_trabajo_id) {
+        campos.push('centro_trabajo_id')
+        valores.push(equipo.centro_trabajo_id)
+        placeholders.push('?')
+      }
+
+      if (equipo.observaciones) {
+        campos.push('observaciones')
+        valores.push(equipo.observaciones)
+        placeholders.push('?')
+      }
+
+      const sql = `INSERT INTO equipos (${campos.join(', ')}) VALUES (${placeholders.join(', ')})`
+      const result = (await query(sql, valores)) as any
+
+      return {
+        success: true,
+        data: { id: result.insertId },
+        message: 'Equipo creado exitosamente',
+      }
+    } catch (error: any) {
+      console.error('Error creando equipo:', error)
+      return {
+        success: false,
+        error: error.message || 'Error al crear equipo',
+      }
     }
-
-    valores.push(id)
-    const sql = `UPDATE equipos SET ${updates.join(', ')}, actualizado_en = NOW() WHERE id = ?`
-
-    const result = (await query(sql, valores)) as any
-    return result.affectedRows > 0
   }
 
-  // Archivar equipo (solo admin)
-  async archiveEquipo(id: number): Promise<boolean> {
-    const result = (await query(
-      'UPDATE equipos SET archivado = 1, actualizado_en = NOW() WHERE id = ?',
-      [id],
-    )) as any
+  async updateEquipo(id: number, equipo: Partial<Equipo>): Promise<ApiResponse> {
+    try {
+      const updates: string[] = []
+      const valores: any[] = []
 
-    return result.affectedRows > 0
+      const camposPermitidos = [
+        'marca',
+        'modelo',
+        'estado',
+        'ubicacion',
+        'colaborador_id',
+        'centro_trabajo_id',
+        'observaciones',
+        'en_uso',
+        'archivado',
+      ]
+
+      camposPermitidos.forEach((campo) => {
+        if (equipo[campo as keyof Equipo] !== undefined) {
+          updates.push(`${campo} = ?`)
+
+          // Convertir booleanos a 0/1 para MariaDB
+          const valor = equipo[campo as keyof Equipo]
+          if (typeof valor === 'boolean') {
+            valores.push(valor ? 1 : 0)
+          } else {
+            valores.push(valor)
+          }
+        }
+      })
+
+      if (updates.length === 0) {
+        return {
+          success: false,
+          error: 'No hay campos para actualizar',
+        }
+      }
+
+      valores.push(id)
+
+      const sql = `UPDATE equipos SET ${updates.join(', ')}, actualizado_en = NOW() WHERE id = ?`
+      const result = (await query(sql, valores)) as any
+
+      if (result.affectedRows === 0) {
+        return {
+          success: false,
+          error: 'Equipo no encontrado',
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Equipo actualizado exitosamente',
+      }
+    } catch (error: any) {
+      console.error('Error actualizando equipo:', error)
+      return {
+        success: false,
+        error: error.message || 'Error al actualizar equipo',
+      }
+    }
   }
 
-  // Obtener estadísticas para dashboard
-  async getDashboardStats() {
-    const stats = (await query(`
-            SELECT categoria, valor FROM vista_dashboard
-        `)) as any[]
+  async getDashboardStats(): Promise<ApiResponse<any>> {
+    try {
+      const stats = (await query('SELECT * FROM vista_dashboard')) as any[]
+      const porTipo = (await query(
+        'SELECT tipo, COUNT(*) as total FROM equipos WHERE archivado = 0 GROUP BY tipo',
+      )) as any[]
 
-    // Convertir a objeto
-    const statsObj: Record<string, number> = {}
-    stats.forEach((stat) => {
-      statsObj[stat.categoria] = parseInt(stat.valor)
-    })
+      // Convertir a objeto
+      const statsObj: Record<string, number> = {}
+      stats.forEach((stat) => {
+        statsObj[stat.categoria] = parseInt(stat.valor)
+      })
 
-    return statsObj
-  }
-
-  // Obtear equipos por tipo para gráficos
-  async getEquiposByType() {
-    return await query(`
-            SELECT
-                tipo,
-                COUNT(*) as total
-            FROM equipos
-            WHERE archivado = 0
-            GROUP BY tipo
-            ORDER BY total DESC
-        `)
-  }
-
-  // Obtener tipos de equipo únicos
-  async getTiposEquipo() {
-    const resultados = (await query('SELECT DISTINCT tipo FROM equipos ORDER BY tipo')) as any[]
-
-    return resultados.map((r) => r.tipo)
-  }
-
-  // Obtener estados únicos
-  async getEstadosEquipo() {
-    const resultados = (await query('SELECT DISTINCT estado FROM equipos ORDER BY estado')) as any[]
-
-    return resultados.map((r) => r.estado)
+      return {
+        success: true,
+        data: {
+          stats: statsObj,
+          porTipo,
+        },
+      }
+    } catch (error: any) {
+      console.error('Error obteniendo estadísticas:', error)
+      return {
+        success: false,
+        error: 'Error al obtener estadísticas',
+      }
+    }
   }
 }

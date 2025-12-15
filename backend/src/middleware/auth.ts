@@ -14,12 +14,12 @@ export const authMiddleware = new Elysia().derive(async ({ headers, set }) => {
   const token = authHeader.substring(7)
   const result = await authController.verifyToken(token)
 
-  if (!result.success) {
+  if (!result.success || !result.data) {
     set.status = 401
     throw new Error(result.error || 'No autorizado')
   }
 
   return {
-    user: result.user,
+    user: result.data,
   }
 })

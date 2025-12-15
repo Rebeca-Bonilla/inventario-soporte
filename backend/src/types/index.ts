@@ -1,6 +1,7 @@
 export interface Usuario {
   id: number
   username: string
+  password: string
   nombre_completo: string
   rol: 'admin' | 'usuario'
   activo: boolean
@@ -48,6 +49,8 @@ export interface Equipo {
   observaciones?: string
   creado_por?: number
   fecha_registro?: string
+  colaborador_nombre?: string
+  centro_trabajo_nombre?: string
 }
 
 export interface LoginRequest {
@@ -55,9 +58,9 @@ export interface LoginRequest {
   password: string
 }
 
-export interface AuthResponse {
+export interface ApiResponse<T = any> {
   success: boolean
-  token?: string
-  user?: Usuario
+  data?: T
+  message?: string
   error?: string
 }
