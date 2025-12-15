@@ -1,23 +1,72 @@
-# Logs
-logs
-*.log
+# ========================
+# DEPENDENCIAS
+# ========================
+node_modules/
+backend/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.bun/
 
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
+# ========================
+# VUE.JS BUILD
+# ========================
+dist/
+dist-ssr/
 *.local
+.cache/
 
+# ========================
+# BACKEND BUILD
+# ========================
+backend/dist/
+backend/*.tsbuildinfo
+build/
+out/
+
+# ========================
+# ENVIRONMENT & CONFIGS
+# ========================
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+config.php
+backend/api.php
+
+# ========================
+# BASE DE DATOS
+# ========================
+/database/
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+
+# ========================
+# LOGS
+# ========================
+logs
+*.log
+
+# ========================
+# TESTING
+# ========================
+coverage
+.nyc_output
 /cypress/videos/
 /cypress/screenshots/
 
-# Editor directories and files
+# ========================
+# EDITORES
+# ========================
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -26,15 +75,28 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+*~
 
-*.tsbuildinfo
+# ========================
+# SISTEMA OPERATIVO
+# ========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Base de datos y archivos sensibles  ← NUEVO
-/database/
-*.sql
-*.db
-.env
-.env.*
-!.env.example
-config.php
-/backend/api.php
+# ========================
+# ARCHIVOS TEMPORALES
+# ========================
+*.tmp
+*.temp
+/tmp/
+/temp/
+backend/tmp/
+backend/temp/
+
+# ========================
+# UPLOADS (si tu app los tiene)
+# ========================
+/uploads/
+backend/uploads/
