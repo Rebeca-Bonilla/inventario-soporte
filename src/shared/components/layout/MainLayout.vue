@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import AppHeader from '@/components/AppHeader.vue'
-import AppSidebar from '@/components/layout/AppSidebar.vue'
+import AppSidebar from '@/shared/components/layout/AppSidebar.vue'
 </script>
 
 <style scoped>

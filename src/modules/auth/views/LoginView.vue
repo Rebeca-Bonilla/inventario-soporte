@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSessionStore } from '@/stores/session'
+import { useSessionStore } from '@/modules/auth/stores/session'
 
 const router = useRouter()
 const sessionStore = useSessionStore()

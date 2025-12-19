@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { useSessionStore } from '@/stores/session'
+import { useSessionStore } from '@/modules/auth/stores/session'
 import { useThemeStore } from '@/stores/theme'
 
 const sessionStore = useSessionStore()

@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSessionStore } from '@/stores/session'
+import { useSessionStore } from '@/modules/auth/stores/session'
 import SessionTimer from '@/components/SessionTimer.vue'
 
 const router = useRouter()

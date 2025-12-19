@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import type { UserBasicInfo } from '@/types/auth'
+import type { UserBasicInfo } from '@/core/types/auth'
 
 interface MenuItem {
   key: string

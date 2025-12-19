@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useSessionStore } from '@/stores/session'
+import { useSessionStore } from '@/modules/auth/stores/session'
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/LoginView.vue'),
+    component: () => import('@/modules/auth/views/LoginView.vue'),
     meta: { requiresAuth: false },
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/DashboardView.vue'),
+    component: () => import('@/modules/dashboard/views/DashboardView.vue'),
     meta: { requiresAuth: true },
   },
   {

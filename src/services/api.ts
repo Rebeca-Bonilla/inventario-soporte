@@ -10,7 +10,7 @@ const api = axios.create({
   },
 })
 
-// Interceptor para agregar token automáticamente
+// Interceptor para agregar token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
@@ -19,12 +19,11 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Interceptor para manejar respuestas
+// Interceptor para respuestas
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login'
