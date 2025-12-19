@@ -1,4 +1,9 @@
-import { authService } from './authService'
+import { authService } from '@/services/authService'
+// En src/services/timerService.ts, comenta la línea 1:
+// import { authService } from "./authService";
+
+// Y luego donde usas authService en el mismo archivo, comenta o usa un mock:
+// Ejemplo: authService.logout() → // authService.logout()
 
 class TimerService {
   private timeLeft: number = 30 * 60

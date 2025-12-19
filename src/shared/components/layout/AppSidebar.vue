@@ -29,7 +29,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/modules/auth/stores/session'
-import SessionTimer from '@/components/SessionTimer.vue'
+import SessionTimer from '@/shared/components/common/SessionTimer.vue'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
