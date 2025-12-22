@@ -25,21 +25,21 @@ export const authService = {
     console.log('🌐 URL del API:', import.meta.env.VITE_API_URL || 'http://localhost:3000')
     try {
       console.log('🔐 Enviando login a backend...', credentials)
-      
+
       // api.post ya devuelve response.data gracias al interceptor
       const result = await api.post('/auth/login', credentials)
       console.log('✅ Respuesta del backend:', result)
-      
+
       // Guardar token si existe
       if (result.token) {
         localStorage.setItem('token', result.token)
         localStorage.setItem('user', JSON.stringify(result.user))
       }
-      
+
       return result
     } catch (error: any) {
       console.error('❌ Error en login:', error)
-      
+
       // El error ya viene transformado por el interceptor
       return {
         success: false,
@@ -56,7 +56,7 @@ export const authService = {
   async checkAuth(): Promise<{ isAuthenticated: boolean; user?: User }> {
     const token = localStorage.getItem('token')
     const userStr = localStorage.getItem('user')
-    
+
     if (token && userStr) {
       try {
         // Opcional: verificar token con backend
@@ -69,7 +69,7 @@ export const authService = {
         return { isAuthenticated: false }
       }
     }
-    
+
     return { isAuthenticated: false }
   },
 

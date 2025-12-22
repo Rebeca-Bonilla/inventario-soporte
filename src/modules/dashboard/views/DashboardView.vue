@@ -1,452 +1,535 @@
+<!-- src/modules/dashboard/views/DashboardView.vue -->
 <template>
-  <div class="dashboard">
-    <h1>Dashboard de Inventario</h1>
-
-    <!-- Timer de sesión -->
-    <div class="session-timer" v-if="user">
-      <small>
-        Usuario: {{ user.nombre_completo }} ({{ user.rol }}) | Tiempo restante:
-        {{ formatTime(timeLeft) }}
-      </small>
-    </div>
-
-    <div class="dashboard-grid">
-      <!-- Tarjetas de resumen -->
-      <div class="summary-card" v-for="stat in stats" :key="stat.label">
-        <h3>{{ stat.label }}</h3>
-        <p class="number">{{ stat.value }}</p>
-        <small>{{ stat.change }} vs último mes</small>
+  <MainLayout>
+    <div class="dashboard-container">
+      <!-- Header con título -->
+      <div class="dashboard-header">
+        <h1>HOME</h1>
+        <div class="user-welcome">
+          <span>Bienvenido, {{ user?.nombre_completo || user?.username }}</span>
+          <span class="user-cargo">{{ user?.cargo }}</span>
+        </div>
       </div>
-    </div>
 
-    <!-- Sección de cambios recientes -->
-    <div class="recent-changes">
-      <h2>📋 Cambios Recientes</h2>
-      <div v-if="loading">Cargando cambios...</div>
-      <div v-else-if="recentChanges.length === 0" class="empty-state">No hay cambios recientes</div>
-      <div v-else class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Cambio realizado</th>
-              <th>Usuario</th>
-              <th>Fecha</th>
-              <th>Hora</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="change in recentChanges" :key="change.id">
-              <td>{{ change.id }}</td>
-              <td>{{ change.descripcion }}</td>
-              <td>{{ change.usuario }}</td>
-              <td>{{ formatDate(change.fecha) }}</td>
-              <td>{{ change.hora }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Menú principal (duplicado de AppHeader para contexto) -->
+      <div class="dashboard-menu">
+        <router-link to="/registro" class="menu-item">📝 Registro</router-link>
+        <router-link to="/consulta" class="menu-item">🔍 Consulta</router-link>
+        <router-link to="/archivados" class="menu-item">📁 Archivados</router-link>
+        <router-link to="/importacion" class="menu-item">📤 Importación</router-link>
+        <router-link to="/reportes" class="menu-item">📊 Reportes</router-link>
+        <router-link to="/historial" class="menu-item">🕐 Historial</router-link>
       </div>
-    </div>
 
-    <!-- Próximos antivirus por expirar -->
-    <div class="antivirus-section" v-if="antivirusExpiring.length > 0">
-      <h2>⚠️ Próximos antivirus por expirar</h2>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Equipo</th>
-              <th>Usuario</th>
-              <th>N/S</th>
-              <th>Fecha expiración</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in antivirusExpiring" :key="item.id">
-              <td>{{ item.id }}</td>
-              <td>{{ item.equipo }}</td>
-              <td>{{ item.usuario }}</td>
-              <td>{{ item.serial }}</td>
-              <td :class="{ 'expiring-soon': isExpiringSoon(item.fecha) }">
-                {{ formatDate(item.fecha) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Contenido principal del dashboard -->
+      <div class="dashboard-content">
+        <!-- Sección de Resumen -->
+        <div class="summary-section">
+          <h2>Resumen</h2>
+          <div class="summary-grid">
+            <SummaryCard title="Equipos de cómputo" :value="stats.equipos_computo" icon="💻" />
+            <SummaryCard title="Monitores" :value="stats.monitores" icon="🖥️" />
+            <SummaryCard title="Teclados" :value="stats.teclados" icon="⌨️" />
+            <SummaryCard title="Teléfonos" :value="stats.telefonos" icon="📱" />
+          </div>
+        </div>
+
+        <!-- Dos columnas: Cambios recientes y Antivirus -->
+        <div class="dashboard-columns">
+          <!-- Columna izquierda: Cambios recientes -->
+          <div class="column-left">
+            <div class="recent-changes">
+              <h2>Cambios recientes</h2>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Cambio realizado</th>
+                      <th>Usuario</th>
+                      <th>Fecha</th>
+                      <th>Hora</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="change in cambiosRecientes" :key="change.id">
+                      <td>{{ change.id }}</td>
+                      <td>{{ change.cambio }}</td>
+                      <td>{{ change.usuario }}</td>
+                      <td>{{ formatDate(change.fecha) }}</td>
+                      <td>{{ change.hora }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna derecha: Antivirus por expirar -->
+          <div class="column-right">
+            <div class="antivirus-section">
+              <div class="section-header">
+                <h2>Próximos antivirus por expirar:</h2>
+                <div class="time-indicator">
+                  <span class="time-label">Próximos</span>
+                  <span class="time-value">{{ proximosMeses }} meses</span>
+                </div>
+              </div>
+
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Equipo</th>
+                      <th>Usuario</th>
+                      <th>N/S</th>
+                      <th>Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in antivirusExpirando" :key="item.id">
+                      <td>{{ item.id }}</td>
+                      <td>{{ item.equipo }}</td>
+                      <td>{{ item.usuario }}</td>
+                      <td>{{ item.ns }}</td>
+                      <td>{{ formatDate(item.fecha) }}</td>
+                    </tr>
+                    <!-- Filas vacías para mantener diseño -->
+                    <tr v-for="i in 4 - antivirusExpirando.length" :key="`empty-${i}`">
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Fin de dashboard-columns -->
       </div>
+      <!-- Fin de dashboard-content -->
     </div>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, onBeforeMount } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { authService } from '@/modules/auth/services/authService'
+import MainLayout from '@/shared/components/layout/MainLayout.vue'
+import SummaryCard from '@/shared/components/summaryCard.vue'
+import { AuthService } from '@/services/authService'
 
-// ==================== INTERFACES ====================
-interface User {
-  id: number
-  username: string
-  nombre_completo: string
-  rol: string
-}
-
-interface Stat {
-  label: string
-  value: number | string
-  change: string
-}
-
-interface RecentChange {
-  id: number
-  descripcion: string
-  usuario: string
-  fecha: string
-  hora: string
-}
-
-interface AntivirusItem {
-  id: string
-  equipo: string
-  usuario: string
-  serial: string
-  fecha: string
-}
-
-// ==================== INICIALIZACIÓN ====================
 const router = useRouter()
+const authService = new AuthService()
+const user = ref(authService.getCurrentUser())
 
-// DEBUG: Verifica todo antes de cargar
-onBeforeMount(() => {
-  console.log('🔍 DEBUG DashboardView:')
-  console.log('- Router:', router)
-  console.log('- Ruta actual:', router.currentRoute.value)
-  console.log('- Token en localStorage:', localStorage.getItem('token'))
-  console.log('- User en localStorage:', localStorage.getItem('user'))
-  console.log('- authService disponible:', !!authService)
+// Datos del dashboard (simulados por ahora)
+const stats = ref({
+  equipos_computo: 72,
+  monitores: 42,
+  teclados: 81,
+  telefonos: 56,
 })
 
-// ==================== ESTADO REACTIVO ====================
-const loading = ref<boolean>(true)
-const user = ref<User | null>(null)
-const timeLeft = ref<number>(30 * 60) // 30 minutos en segundos
-const stats = ref<Stat[]>([])
-const recentChanges = ref<RecentChange[]>([])
-const antivirusExpiring = ref<AntivirusItem[]>([])
+const cambiosRecientes = ref([
+  {
+    id: 1,
+    cambio: 'Ingreso de equipo nuevo',
+    usuario: 'Fulano_Perez',
+    fecha: '2024-02-25',
+    hora: '13:03:23',
+  },
+  {
+    id: 2,
+    cambio: 'Archivamiento',
+    usuario: 'Mengano_Gutierrez',
+    fecha: '2024-02-25',
+    hora: '13:13:21',
+  },
+  {
+    id: 3,
+    cambio: 'Actualización de estado',
+    usuario: 'admin',
+    fecha: '2024-02-24',
+    hora: '09:45:10',
+  },
+  {
+    id: 4,
+    cambio: 'Asignación de equipo',
+    usuario: 'usuario',
+    fecha: '2024-02-24',
+    hora: '15:30:45',
+  },
+  {
+    id: 5,
+    cambio: 'Registro de mantenimiento',
+    usuario: 'admin',
+    fecha: '2024-02-23',
+    hora: '11:20:33',
+  },
+  {
+    id: 6,
+    cambio: 'Baja de equipo',
+    usuario: 'Mengano_Gutierrez',
+    fecha: '2024-02-23',
+    hora: '16:55:12',
+  },
+  { id: 7, cambio: 'Importación masiva', usuario: 'admin', fecha: '2024-02-22', hora: '14:10:05' },
+  {
+    id: 8,
+    cambio: 'Cambio de ubicación',
+    usuario: 'usuario',
+    fecha: '2024-02-22',
+    hora: '10:25:30',
+  },
+  {
+    id: 9,
+    cambio: 'Actualización de software',
+    usuario: 'Fulano_Perez',
+    fecha: '2024-02-21',
+    hora: '08:40:15',
+  },
+  { id: 10, cambio: 'Reasignación', usuario: 'admin', fecha: '2024-02-21', hora: '17:05:22' },
+  {
+    id: 11,
+    cambio: 'Reparación completada',
+    usuario: 'Mengano_Gutierrez',
+    fecha: '2024-02-20',
+    hora: '12:15:40',
+  },
+  {
+    id: 12,
+    cambio: 'Inventario físico',
+    usuario: 'usuario',
+    fecha: '2024-02-20',
+    hora: '09:30:18',
+  },
+])
 
-// Timer de sesión con tipo correcto
-let timerInterval: ReturnType<typeof setInterval> | null = null
+const antivirusExpirando = ref([
+  {
+    id: 1,
+    equipo: 'Laptop Dell XPS',
+    usuario: 'Juan Pérez',
+    ns: 'SN-DELL001',
+    fecha: '2024-05-15',
+  },
+  { id: 2, equipo: 'PC HP Elite', usuario: 'María García', ns: 'SN-HP002', fecha: '2024-05-20' },
+  { id: 3, equipo: 'MacBook Pro', usuario: 'Carlos López', ns: 'SN-MAC003', fecha: '2024-06-01' },
+  {
+    id: 4,
+    equipo: 'Lenovo ThinkPad',
+    usuario: 'Ana Rodríguez',
+    ns: 'SN-LEN004',
+    fecha: '2024-06-10',
+  },
+])
 
-// ==================== FUNCIONES DE UTILIDAD ====================
-// Formatear tiempo (MM:SS)
-const formatTime = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-}
+const proximosMeses = ref(3)
 
-// Formatear fecha
-const formatDate = (dateString: string): string => {
-  if (!dateString) return ''
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES')
-  } catch {
-    return dateString
-  }
-}
-
-// Verificar si expira pronto (menos de 30 días)
-const isExpiringSoon = (dateString: string): boolean => {
-  const expiryDate = new Date(dateString)
-  const today = new Date()
-  const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  return diffDays <= 30
-}
-
-// ==================== LÓGICA PRINCIPAL ====================
-// Cargar datos del dashboard
-const loadDashboardData = async (): Promise<void> => {
-  console.log('🟡 START loadDashboardData')
-
-  try {
-    loading.value = true
-
-    // 1. Primero verifica autenticación LOCALMENTE
-    const token = localStorage.getItem('token')
-    if (!token) {
-      throw new Error('No hay token, redirigiendo a login')
-    }
-
-    // 2. Obtener usuario actual (de localStorage primero)
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-      user.value = JSON.parse(userStr)
-    } else {
-      // Si no hay usuario en localStorage, verificar con backend
-      console.log('⚠️ No hay usuario en localStorage, verificando con backend...')
-      const authState = await authService.checkAuth()
-      user.value = authState.user
-    }
-
-    console.log('👤 Usuario cargado:', user.value)
-
-    // 3. Cargar datos del dashboard (con timeout para evitar bloqueos)
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout cargando datos')), 10000),
-    )
-
-    const dataPromise = Promise.resolve({
-      // DATOS MOCK TEMPORALES - COMENTA ESTO CUANDO TU API ESTÉ LISTA
-      totalEquipos: 42,
-      equiposActivos: 35,
-      enReparacion: 5,
-      asignados: 28,
-      totalMonitores: 15,
-      totalTelefonos: 10,
-      equiposComputo: 25,
-      teclados: 8,
-      tablets: 7,
-      camaras: 5,
-      terminales: 3,
-    })
-
-    // Si tienes API real, cambia dataPromise por:
-    // const dataPromise = equiposService.getDashboardData()
-
-    const data = await Promise.race([dataPromise, timeoutPromise])
-    console.log('📊 Datos recibidos:', data)
-
-    // 4. Actualizar stats
-    stats.value = [
-      {
-        label: 'Equipos de cómputo',
-        value: data.totalEquipos || data.equiposComputo || 0,
-        change: '+3',
-      },
-      { label: 'Monitores', value: data.totalMonitores || 0, change: '+1' },
-      { label: 'Teclados', value: data.teclados || 0, change: '0' },
-      { label: 'Teléfonos', value: data.totalTelefonos || 0, change: '+2' },
-      { label: 'Cámaras', value: data.camaras || 0, change: '+1' },
-      { label: 'Tablets', value: data.tablets || 0, change: '0' },
-    ]
-
-    // 5. Cargar cambios recientes (también mock por ahora)
-    recentChanges.value = [
-      {
-        id: 1,
-        descripcion: 'Sistema funcionando correctamente',
-        usuario: 'sistema',
-        fecha: new Date().toISOString(),
-        hora: '10:00:00',
-      },
-    ]
-
-    // 6. Mock antivirus (opcional)
-    antivirusExpiring.value = [
-      {
-        id: 'AV-001',
-        equipo: 'Laptop Dell',
-        usuario: 'Admin',
-        serial: 'SN123',
-        fecha: '2024-03-15',
-      },
-    ]
-
-    console.log('🟢 FIN loadDashboardData - ÉXITO')
-  } catch (error) {
-    console.error('🔴 ERROR en loadDashboardData:', error)
-
-    // Datos de emergencia
-    stats.value = [
-      { label: 'Equipos de cómputo', value: '--', change: 'N/A' },
-      { label: 'Monitores', value: '--', change: 'N/A' },
-      { label: 'Teclados', value: '--', change: 'N/A' },
-    ]
-
-    // Si el error es grave (no hay token), redirigir a login
-    if (
-      error instanceof Error &&
-      (error.message.includes('token') || error.message.includes('autenticación'))
-    ) {
-      console.log('Redirigiendo a login por error de autenticación...')
-      authService.logout()
-      router.push('/login')
-    }
-  } finally {
-    loading.value = false
-    console.log('🏁 loadDashboardData completado (con o sin errores)')
-  }
-}
-
-// Iniciar timer de sesión
-const startSessionTimer = (): void => {
-  console.log('⏰ Iniciando timer de sesión')
-
-  // Limpiar timer anterior si existe
-  if (timerInterval) {
-    clearInterval(timerInterval)
-    timerInterval = null
-  }
-
-  timerInterval = setInterval(() => {
-    if (timeLeft.value <= 0) {
-      console.log('⌛ Sesión expirada por timer')
-      if (timerInterval) clearInterval(timerInterval)
-      authService.logout()
-      router.push('/login')
-    } else {
-      timeLeft.value--
-      // Opcional: mostrar advertencia a los 5 minutos
-      if (timeLeft.value === 5 * 60) {
-        console.warn('⚠️ Sesión expira en 5 minutos')
-      }
-    }
-  }, 1000)
-
-  console.log('✅ Timer iniciado, tiempo restante:', formatTime(timeLeft.value))
-}
-
-// Resetear timer en interacción
-const resetSessionTimer = (): void => {
-  timeLeft.value = 30 * 60 // Reset a 30 minutos
-}
-
-// Configurar eventos de interacción
-const setupActivityListeners = (): void => {
-  const events = ['mousedown', 'keydown', 'scroll', 'touchstart']
-  events.forEach((event) => {
-    window.addEventListener(event, resetSessionTimer)
-  })
-}
-
-// ==================== CICLO DE VIDA ====================
 onMounted(() => {
-  console.log('🚀 Dashboard montado')
-  loadDashboardData()
-  startSessionTimer()
-  setupActivityListeners()
+  console.log('Dashboard montado para usuario:', user.value)
+
+  if (!user.value) {
+    console.log('Usuario no autenticado, redirigiendo...')
+    router.push('/login')
+  }
+
+  // Aquí cargaríamos datos reales del backend
+  fetchDashboardData()
 })
 
-onUnmounted(() => {
-  console.log('🗑️ Dashboard desmontado')
-  if (timerInterval) clearInterval(timerInterval)
+const fetchDashboardData = async () => {
+  try {
+    // En el futuro, llamar al backend
+    // const response = await api.get('/dashboard/stats');
+    // stats.value = response.data;
+  } catch (error) {
+    console.error('Error cargando datos del dashboard:', error)
+  }
+}
 
-  // Remover listeners
-  const events = ['mousedown', 'keydown', 'scroll', 'touchstart']
-  events.forEach((event) => {
-    window.removeEventListener(event, resetSessionTimer)
-  })
-})
+const formatDate = (dateString: string) => {
+  if (!dateString || dateString === '-') return '-'
+  const date = new Date(dateString)
+  return date
+    .toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+    .replace(/\//g, '-')
+}
 </script>
 
 <style scoped>
-.dashboard {
-  padding: 20px;
+.dashboard-container {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dashboard-header {
+  padding: 1.5rem 2rem;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.user-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.user-welcome span:first-child {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.user-cargo {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+
+/* Menú del dashboard */
+.dashboard-menu {
+  display: flex;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.5rem 2rem;
+  gap: 0;
+  overflow-x: auto;
+}
+
+.menu-item {
+  padding: 0.75rem 1.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.menu-item:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+}
+
+.menu-item.router-link-active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background-color: var(--bg-secondary);
+}
+
+/* Contenido principal */
+.dashboard-content {
+  padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.session-timer {
-  background: #f0f7ff;
-  padding: 8px 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  border-left: 4px solid #2196f3;
+/* Sección de resumen */
+.summary-section {
+  margin-bottom: 2rem;
 }
 
-.dashboard-grid {
+.summary-section h2 {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-size: 1.4rem;
+}
+
+.summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-.summary-card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+/* Columnas del dashboard */
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
 }
 
-.summary-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.column-left,
+.column-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.summary-card h3 {
-  margin: 0 0 10px 0;
-  color: #555;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.summary-card .number {
-  margin: 0 0 5px 0;
-  font-size: 32px;
-  font-weight: bold;
-  color: #2196f3;
-}
-
-.summary-card small {
-  color: #666;
-  font-size: 12px;
-}
-
+/* Tablas */
 .recent-changes,
 .antivirus-section {
-  background: white;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
+  overflow: hidden;
 }
 
 .recent-changes h2,
 .antivirus-section h2 {
-  margin: 0 0 20px 0;
-  color: #333;
-  font-size: 20px;
+  padding: 1rem 1.5rem;
+  margin: 0;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1.2rem;
+  color: var(--text-primary);
 }
 
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: #888;
-  font-style: italic;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.time-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.time-value {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .table-container {
   overflow-x: auto;
 }
 
-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  font-size: 0.9rem;
 }
 
-th,
-td {
-  padding: 12px 16px;
+.data-table thead {
+  background: var(--bg-tertiary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.data-table th {
+  padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-th {
-  background-color: #f8f9fa;
   font-weight: 600;
-  color: #444;
+  color: var(--text-primary);
+  border-right: 1px solid var(--border-color);
 }
 
-tbody tr:hover {
-  background-color: #f8f9fa;
+.data-table th:last-child {
+  border-right: none;
 }
 
-.expiring-soon {
-  color: #f44336;
-  font-weight: bold;
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.data-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .dashboard-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .user-welcome {
+    align-items: flex-start;
+  }
+
+  .dashboard-menu {
+    padding: 0.5rem 1rem;
+    gap: 0.25rem;
+  }
+
+  .menu-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .dashboard-content {
+    padding: 1rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-menu {
+    flex-direction: column;
+  }
+
+  .menu-item {
+    justify-content: center;
+  }
 }
 </style>

@@ -1,18 +1,36 @@
+<!-- src/shared/components/layout/MainLayout.vue -->
 <template>
   <div class="main-layout">
+    <!-- Sidebar (izquierda) -->
     <AppSidebar />
+
+    <!-- Contenido principal (derecha) -->
     <div class="main-content">
+      <!-- Header superior -->
       <AppHeader />
-      <main class="content-area">
-        <router-view />
+
+      <!-- Contenido de la página -->
+      <main class="page-content">
+        <slot />
       </main>
+
+      <!-- Timer de sesión flotante -->
+      <SessionTimer v-if="showSessionTimer" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import AppHeader from '@/shared/components/common/AppHeader.vue'
-import AppSidebar from '@/shared/components/layout/AppSidebar.vue'
+import { ref, onMounted } from 'vue'
+import AppSidebar from './AppSidebar.vue'
+import AppHeader from './AppHeader.vue'
+import SessionTimer from '../common/SessionTimer.vue'
+
+const showSessionTimer = ref(true)
+
+onMounted(() => {
+  console.log('MainLayout montado')
+})
 </script>
 
 <style scoped>
@@ -26,13 +44,24 @@ import AppSidebar from '@/shared/components/layout/AppSidebar.vue'
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  min-width: 0; /* Para evitar desbordamiento */
 }
 
-.content-area {
+.page-content {
   flex: 1;
-  padding: 2rem;
-  background-color: var(--bg-secondary);
   overflow-y: auto;
+  padding: 0;
+  background-color: var(--bg-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .main-content {
+    width: 100%;
+  }
 }
 </style>

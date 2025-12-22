@@ -1,267 +1,204 @@
-<template>
-  <div class="login-container">
-    <!-- Fondo con efecto lava -->
-    <div class="lava-background">
-      <div
-        v-for="blob in lavaBlobs"
-        :key="blob.id"
-        class="lava-blob"
-        :style="blobStyle(blob)"
-      ></div>
-    </div>
-
-    <!-- Formulario de login -->
-    <div class="login-form">
-      <div class="form-header">
-        <h1>Sistema de Inventario</h1>
-        <p>Ingresa a tu cuenta</p>
-      </div>
-
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <label for="username">Usuario</label>
-          <input
-            id="username"
-            v-model="credentials.username"
-            type="text"
-            required
-            @input="clearError('username')"
-            :class="{ error: errors.username }"
-          />
-          <span v-if="errors.username" class="error-message">{{ errors.username }}</span>
-        </div>
-
-        <div class="form-group">
-          <label for="password">Contraseña</label>
-          <div class="password-input">
-            <input
-              id="password"
-              v-model="credentials.password"
-              :type="showPassword ? 'text' : 'password'"
-              required
-              @input="clearError('password')"
-              :class="{ error: errors.password }"
-            />
-            <button type="button" class="toggle-password" @click="showPassword = !showPassword">
-              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
-            </button>
-          </div>
-          <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
-        </div>
-
-        <div v-if="errors.general" class="error-general">
-          {{ errors.general }}
-        </div>
-
-        <button type="submit" class="login-btn" :disabled="isLoading">
-          <span v-if="isLoading">Cargando...</span>
-          <span v-else>Iniciar Sesión</span>
-        </button>
-      </form>
-    </div>
-  </div>
-</template>
-
+<!-- src/modules/auth/views/LoginView.vue -->
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, computed } from 'vue' // ← Añade computed
 import { useRouter } from 'vue-router'
-import { useSessionStore } from '@/modules/auth/stores/session'
+import { AuthService } from '@/services/authService'
 
 const router = useRouter()
-const sessionStore = useSessionStore()
+const authService = new AuthService()
 
-// Estado del formulario
-const credentials = reactive({
-  username: '',
-  password: '',
-})
-
-const errors = reactive<Record<string, string>>({})
+const username = ref('')
+const password = ref('')
 const showPassword = ref(false)
-const isLoading = ref(false)
+const loading = ref(false)
+const error = ref('')
 
-// Configuración de la Lámpara de Lava
-interface LavaBlob {
-  id: number
-  size: number
-  x: number
-  y: number
-  color: string
-  duration: number
-}
+// Agrega esta línea para detectar modo desarrollo
+const isDevMode = import.meta.env.DEV // ← Aquí SÍ se puede usar
 
-const lavaBlobs = ref<LavaBlob[]>([
-  { id: 1, size: 120, x: 20, y: 80, color: '#ff6b6b', duration: 25 },
-  { id: 2, size: 90, x: 70, y: 30, color: '#4c4cac', duration: 30 },
-  { id: 3, size: 100, x: 80, y: 60, color: '#4b7dc1', duration: 35 },
-  { id: 4, size: 80, x: 80, y: 70, color: '#9cc6b4', duration: 28 },
-  { id: 5, size: 110, x: 30, y: 40, color: '#feca57', duration: 32 },
-  { id: 6, size: 100, x: 60, y: 20, color: '#ff9ff3', duration: 27 },
-])
-
-// Computed para los estilos de cada blob
-const blobStyle = computed(() => (blob: LavaBlob) => ({
-  width: `${blob.size}px`,
-  height: `${blob.size}px`,
-  left: `${blob.x}%`,
-  top: `${blob.y}%`,
-  backgroundColor: blob.color,
-  animationDuration: `${blob.duration}s`,
-}))
-
-// Limpiar errores
-const clearError = (field: string) => {
-  if (errors[field]) {
-    errors[field] = ''
-  }
-  if (errors.general) {
-    errors.general = ''
-  }
-}
-
-// Validar formulario
-const validateForm = (): boolean => {
-  let isValid = true
-
-  // Limpiar errores previos
-  errors.username = ''
-  errors.password = ''
-  errors.general = ''
-
-  if (!credentials.username.trim()) {
-    errors.username = 'Usuario requerido'
-    isValid = false
-  }
-
-  if (!credentials.password) {
-    errors.password = 'Contraseña requerida'
-    isValid = false
-  }
-
-  return isValid
-}
-
-// Manejo del login
 const handleLogin = async () => {
-  if (!validateForm()) {
-    return
-  }
+  error.value = ''
+  loading.value = true
 
-  isLoading.value = true
-  errors.general = ''
+  console.log('=== INICIANDO LOGIN ===')
 
   try {
-    const result = await sessionStore.login(credentials)
+    // Validar campos
+    if (!username.value.trim() || !password.value.trim()) {
+      throw new Error('Por favor completa todos los campos')
+    }
 
-    if (result.success) {
-      router.push('/dashboard')
-    } else {
-      errors.general = result.error || 'Error al iniciar sesión'
+    const credentials = {
+      username: username.value.trim(),
+      password: password.value.trim(),
     }
-  } catch (error) {
-    if (error instanceof Error) {
-      errors.general = error.message
-    } else {
-      errors.general = 'Error de conexión. Intente nuevamente.'
+
+    console.log('📤 Credenciales a enviar:', credentials)
+
+    // 1. Llamar al servicio de login
+    const response = await authService.login(credentials)
+    console.log('✅ Respuesta recibida:', response)
+
+    // 2. Verificar que se guardó
+    const token = localStorage.getItem('token')
+    const user = authService.getCurrentUser()
+
+    console.log('🔍 Token en localStorage:', token ? '✅ Sí' : '❌ No')
+    console.log('🔍 Usuario en localStorage:', user)
+
+    if (!token || !user) {
+      throw new Error('No se pudo guardar la sesión')
     }
+
+    console.log('🔄 Redirigiendo a dashboard...')
+
+    // 3. Redirigir
+    router.push('/dashboard')
+  } catch (err: any) {
+    console.error('❌ Error completo:', err)
+    error.value = err.message || 'Error desconocido'
+    alert('Error: ' + error.value)
   } finally {
-    isLoading.value = false
+    loading.value = false
   }
+}
+
+// Para desarrollo: autocompletar credenciales
+const autoFill = (type: 'admin' | 'usuario') => {
+  if (type === 'admin') {
+    username.value = 'admin'
+    password.value = 'admin123'
+  } else {
+    username.value = 'usuario'
+    password.value = 'usuario123'
+  }
+  console.log(`Autocompletado: ${type}`)
 }
 </script>
 
+<template>
+  <div class="login-container">
+    <div class="logo">*LOGO*</div>
+
+    <!-- Para desarrollo: botones de autocompletar -->
+    <!-- Cambia v-if="import.meta.env.DEV" por v-if="isDevMode" -->
+    <div v-if="isDevMode" class="dev-tools">
+      <button @click="autoFill('admin')" class="btn-dev">Admin</button>
+      <button @click="autoFill('usuario')" class="btn-dev">Usuario</button>
+    </div>
+
+    <form @submit.prevent="handleLogin">
+      <div class="input-group">
+        <label>Usuario:</label>
+        <input
+          v-model="username"
+          type="text"
+          required
+          placeholder="admin o usuario"
+          :disabled="loading"
+        />
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña:</label>
+        <div class="password-wrapper">
+          <input
+            v-model="password"
+            :type="showPassword ? 'text' : 'password'"
+            required
+            placeholder="admin123 o usuario123"
+            :disabled="loading"
+          />
+          <button
+            type="button"
+            @click="showPassword = !showPassword"
+            class="toggle-password"
+            :disabled="loading"
+          >
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+      </div>
+
+      <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+
+      <button type="submit" :disabled="loading" class="login-button">
+        {{ loading ? 'Verificando...' : 'Iniciar sesión' }}
+      </button>
+
+      <div v-if="error" class="error-message">
+        {{ error }}
+      </div>
+    </form>
+  </div>
+</template>
+
 <style scoped>
 .login-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.lava-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, #667eea, #764ba2);
-  z-index: -1;
-}
-
-.lava-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(40px);
-  opacity: 0.7;
-  animation: float infinite ease-in-out;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-20px) scale(1.1);
-  }
-}
-
-.login-form {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  width: 100%;
   max-width: 400px;
-  backdrop-filter: blur(10px);
+  margin: 100px auto;
+  padding: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.form-header {
+.logo {
   text-align: center;
+  font-size: 2rem;
   margin-bottom: 2rem;
+  color: #2c3e50;
 }
 
-.form-header h1 {
-  color: #333;
-  margin-bottom: 0.5rem;
+.dev-tools {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
-.form-header p {
-  color: #666;
+.btn-dev {
+  padding: 0.5rem 1rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
-.form-group {
+.btn-dev:hover {
+  background: #2980b9;
+}
+
+.input-group {
   margin-bottom: 1.5rem;
 }
 
-label {
+.input-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #333;
-  font-weight: 500;
+  font-weight: bold;
+  color: #2c3e50;
 }
 
-input {
+.input-group input {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #ddd;
-  border-radius: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
-input:focus {
+.input-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
-input.error {
-  border-color: #e74c3c;
-}
-
-.password-input {
+.password-wrapper {
   position: relative;
 }
 
@@ -274,44 +211,61 @@ input.error {
   border: none;
   cursor: pointer;
   font-size: 1.2rem;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-password:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.forgot-password {
+  display: block;
+  text-align: right;
+  margin-bottom: 1.5rem;
+  color: #3498db;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.login-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.login-button:hover:not(:disabled) {
+  background: #34495e;
+}
+
+.login-button:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
 }
 
 .error-message {
-  color: #e74c3c;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-  display: block;
-}
-
-.error-general {
-  background: #fee;
-  color: #e74c3c;
+  margin-top: 1rem;
   padding: 0.75rem;
-  border-radius: 5px;
-  margin-bottom: 1rem;
-  text-align: center;
-  border: 1px solid #f5c6cb;
-}
-
-.login-btn {
-  width: 100%;
-  padding: 0.75rem;
-  background: linear-gradient(45deg, #667eea, #764ba2);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-
-.login-btn:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.login-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  background: #ffeaea;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
+  color: #e74c3c;
+  font-size: 0.9rem;
 }
 </style>

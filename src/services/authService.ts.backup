@@ -1,0 +1,71 @@
+﻿// Servicio de autenticación básico - versión temporal
+export const authService = {
+  logout: () => {
+    console.log('Cerrando sesión...')
+    // Aquí irá la lógica real de logout
+    return Promise.resolve()
+  },
+
+  isAuthenticated: () => {
+    // Lógica para verificar si el usuario está autenticado
+    return true
+  },
+}
+// src/services/authService.ts
+import pool from '../config/database'
+
+export interface User {
+  id: number
+  username: string
+  nombre_completo: string
+  rol: 'admin' | 'usuario'
+  cargo?: string
+  activo: boolean
+}
+
+export class AuthService {
+  async validateUser(username: string, password: string): Promise<User | null> {
+    try {
+      const [rows] = await pool.execute(
+        'SELECT id, username, password, nombre_completo, rol FROM usuarios WHERE username = ? AND activo = 1',
+        [username],
+      )
+
+      const users = rows as any[]
+
+      if (users.length === 0) {
+        return null
+      }
+
+      const user = users[0]
+
+      // NOTA: En producción usar bcrypt.compare()
+      if (user.password !== password) {
+        return null
+      }
+
+      // Eliminar password del objeto
+      const { password: _, ...userWithoutPassword } = user
+
+      return userWithoutPassword
+    } catch (error) {
+      console.error('Error en autenticación:', error)
+      return null
+    }
+  }
+
+  async getUserById(id: number): Promise<User | null> {
+    try {
+      const [rows] = await pool.execute(
+        'SELECT id, username, nombre_completo, rol FROM usuarios WHERE id = ?',
+        [id],
+      )
+
+      const users = rows as any[]
+      return users.length > 0 ? users[0] : null
+    } catch (error) {
+      console.error('Error obteniendo usuario:', error)
+      return null
+    }
+  }
+}
